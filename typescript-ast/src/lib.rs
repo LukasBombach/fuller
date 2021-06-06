@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let module = parse_typescript("function foo() {}");
+        let module = parse_typescript("function foo(str: string): number { return str.length; }");
         println!("module {:#?}", module);
         assert_eq!(1,1);
     }
