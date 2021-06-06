@@ -7,3 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+swc_ecma_parser = "0.57.3"
+swc_ecma_ast = "0.45.0"
+
+[dependencies.swc_common]
+version = "0.10.20"
+features = ["tty-emitter", "sourcemap"]
