@@ -1,5 +1,5 @@
 [package]
-name = "css-ast"
+name = "typescript-llvm-ir"
 version = "0.1.0"
 authors = ["Lukas Bombach <lukas.bombach@googlemail.com>"]
 edition = "2018"

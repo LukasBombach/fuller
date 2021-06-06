@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+  "typescript-llvm-ir",
   "typescript-ast",
   "css-ast",
 ]
