@@ -20,8 +20,8 @@ pub fn parse_typescript(src: &str) -> Module {
     );
 
     let lexer = Lexer::new(
-        // We want to parse ecmascript
-        Syntax::Es(Default::default()),
+        // We want to parse TypeScript
+        Syntax::Typescript(Default::default()),
         // JscTarget defaults to es5
         Default::default(),
         StringInput::from(&*fm),
@@ -53,7 +53,7 @@ mod tests {
     #[test]
     fn it_works() {
         let module = parse_typescript("function foo() {}");
-        println!("module {:?}", module);
+        println!("module {:#?}", module);
         assert_eq!(1,1);
     }
 }
