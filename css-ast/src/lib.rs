@@ -24,8 +24,17 @@ enum Token {
     #[token("}")]
     CurlyBracketClose,
 
+    #[token("::")]
+    DoubleColon,
+
     #[token(":")]
     Colon,
+
+    #[token(".")]
+    Dot,
+
+    #[token("#")]
+    Pound,
 }
 
 #[cfg(test)]
@@ -33,6 +42,42 @@ mod tests {
     use super::*;
     mod assert_lex;
     use assert_lex::assert_lex;
+
+    #[test]
+    fn test_double_colon_selector() {
+        assert_lex(
+            "div::",
+            &[
+                (Token::Ident, "div", 0..3),
+                (Token::DoubleColon, "::", 3..5),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_tag_selector() {
+        assert_lex(
+            "div { }",
+            &[
+                (Token::Ident, "div", 0..3),
+                (Token::CurlyBracketOpen, "{", 4..5),
+                (Token::CurlyBracketClose, "}", 6..7),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_class_selector() {
+        assert_lex(
+            ".myclass { }",
+            &[
+                (Token::Dot, ".", 0..1),
+                (Token::Ident, "myclass", 1..8),
+                (Token::CurlyBracketOpen, "{", 9..10),
+                (Token::CurlyBracketClose, "}", 11..12),
+            ],
+        );
+    }
 
     #[test]
     fn test_line_height() {
