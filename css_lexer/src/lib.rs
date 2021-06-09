@@ -1,5 +1,7 @@
 use logos::Logos;
 
+pub use logos::Lexer;
+
 #[derive(Logos, Debug, PartialEq, Clone, Copy)]
 pub enum Token {
     #[regex(r"[ \t\n\f]+", logos::skip)]
@@ -40,6 +42,6 @@ pub enum Token {
     Hash,
 }
 
-pub fn get_token_stream(source: &str) -> logos::Lexer<'_, Token>  {
+pub fn get_lexer<'a>(source: &'a str) -> logos::Lexer<'a, Token>  {
     Token::lexer(source)
 }
