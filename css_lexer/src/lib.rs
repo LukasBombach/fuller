@@ -49,40 +49,4 @@ mod tests {
 
     }
 
-    #[test]
-    fn test_child_selectors() {
-        let tokens: Vec<_> = Selector::lexer("div .my_class #my_id").collect();
-        assert_eq!(tokens, &[
-            Selector::Tag("div"),
-            Selector::Class("my_class"),
-            Selector::Id("my_id"),
-        ]);
-    }
-
-    #[test]
-    fn test_multiple_selectors() {
-        let tokens: Vec<_> = Selector::lexer("div, .my_class, #my_id").collect();
-        assert_eq!(tokens, &[
-            Selector::Tag("div"),
-            Selector::Comma,
-            Selector::Class("my_class"),
-            Selector::Comma,
-            Selector::Id("my_id"),
-        ]);
-    }
-
-    #[test]
-    fn test_comma() {
-        let tokens: Vec<_> = Selector::lexer(",").collect();
-        assert_eq!(tokens, &[Selector::Comma]);
-
-    }
-
-    #[test]
-    fn test_curly_bracket_open() {
-        let tokens: Vec<_> = Selector::lexer("{").collect();
-        assert_eq!(tokens, &[Selector::CurlyBracketOpen]);
-
-    }
-
 }
