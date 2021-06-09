@@ -1,6 +1,4 @@
-use css_lexer::get_lexer;
-use css_lexer::Token;
-use css_lexer::Lexer;
+use css_lexer::*;
 
 pub struct Parser<'a> {
     lexer: Lexer<'a, Token>,
@@ -16,7 +14,9 @@ impl<'a>  Parser<'a> {
 
     pub fn parse(&mut self) {
         while let Some(token) = self.token() {
-            println!("token {:?}", token);
+            match token {
+                _ => println!("_ {:?}", token),
+            }
         }
     }
 
@@ -25,16 +25,13 @@ impl<'a>  Parser<'a> {
     }
 }
 
-
-
-
 #[cfg(test)]
 mod tests {
     use super::Parser;
 
     #[test]
     fn it_works() {
-        let mut parser = Parser::new(".test {}");
+        let mut parser = Parser::new(".myClass { prop: val; }");
         parser.parse();
         assert_eq!(3, 1 +2);
     }

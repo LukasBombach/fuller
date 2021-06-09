@@ -2,11 +2,36 @@ use logos::Logos;
 
 pub use logos::Lexer;
 
-#[derive(Logos, Debug, PartialEq, Clone, Copy)]
+pub enum Selector {
+    ClassName(String),
+}
+
+fn class_name(lex: &mut Lexer<Token>) -> Option<String>{
+    match lex.slice().strip_prefix(".") {
+        Some(name) => Some(name.to_string()),
+        None => None
+    }
+}
+
+/* #[derive(Logos, Debug, PartialEq, Clone)]
+pub enum CssSelector {
+    #[regex(r"[ \t\n\f]+", logos::skip)]
+    #[error]
+    Error,
+
+    #[regex("[a-zA-Z0-9_-]+")]
+    Ident,
+} */
+
+#[derive(Logos, Debug, PartialEq, Clone)]
 pub enum Token {
     #[regex(r"[ \t\n\f]+", logos::skip)]
     #[error]
     Error,
+
+
+    #[regex("\\.[-a-zA-Z_][a-zA-Z0-9_-]*", class_name)]
+    ClassName(String),
 
     #[regex("em|ex|ch|rem|vw|vh|vmin|vmax")]
     RelativeLength,
