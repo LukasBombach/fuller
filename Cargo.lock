@@ -88,6 +88,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "css_lexer"
+version = "0.1.0"
+dependencies = [
+ "logos",
+]
+
+[[package]]
+name = "css_parser"
+version = "0.1.0"
+dependencies = [
+ "css_lexer",
+]
+
+[[package]]
 name = "darling"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
