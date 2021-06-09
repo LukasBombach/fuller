@@ -1,13 +1,16 @@
+use logos::Logos;
+use css_lexer::Token;
+
+pub fn parse(source: &str) {
+    let lexer = Token::lexer(source);
+
+}
 
 
 #[cfg(test)]
 mod tests {
-
-    use css_lexer::add_one;
-
-
     #[test]
     fn it_works() {
-        assert_eq!(3, add_one(2));
+        assert_eq!(3, 1 +2);
     }
 }

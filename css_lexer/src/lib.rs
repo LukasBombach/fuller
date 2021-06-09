@@ -1,7 +1,7 @@
 use logos::Logos;
 
 #[derive(Logos, Debug, PartialEq, Clone, Copy)]
-enum Token {
+pub enum Token {
     #[regex(r"[ \t\n\f]+", logos::skip)]
     #[error]
     Error,
@@ -40,6 +40,6 @@ enum Token {
     Hash,
 }
 
-pub fn add_one(x: i32) -> i32 {
-    x + 1
+pub fn get_token_stream(source: &str) -> logos::Lexer<'_, Token>  {
+    Token::lexer(source)
 }
