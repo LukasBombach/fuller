@@ -4,4 +4,4 @@
 > To change something, build a new model that makes the existing model obsolete.”
 > ― Buckminster Fuller
 
-_Fuller are a set of tools to build build tools._
+**Fuller are a set of tools to build build tools.**
