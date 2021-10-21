@@ -6,4 +6,5 @@ members = [
   "css-ast",
   "css_lexer",
   "css_parser",
+  "typescript-parser",
 ]
