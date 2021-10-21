@@ -1,9 +1,6 @@
 [workspace]
+resolver = "2"
 
 members = [
-  "typescript-llvm-ir",
-  "typescript-ast",
-  "css-ast",
-  "css_lexer",
-  "css_parser",
+  "estree-parser",
 ]
