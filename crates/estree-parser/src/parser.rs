@@ -1,33 +1,35 @@
-use std::str;
+use crate::ast::Position;
+use crate::ast::Program;
+use crate::ast::SourceLocation;
+use crate::state::program;
 
-/* pub struct Node<'a> {
-  pub r#type: &'a str,
-  pub loc: Option<SourceLocation<'a>>,
-}
-
-
-
+/*
+ * ** MASTERPLAN **
+ *
+ * - Implement an Interator for the sourcecode
+ * - each next goes through a state machine
+ *
+ * _or maybe better_
+ *
+ * - implement statemachine that creates a tree (AST) while walking the code via recursion (sort of)
+ *
+ *
+ * _anyhow_
+ *
+ * - each state has its strategy of finding the current token as quickly as possible
+ * - take min characters, decide what to do next based on the possibilites of each state
+ *
+ * _godmode optimization_
+ *
+ * - instead of handcrafting each optimized strategy, use metaprogramming to implement the code for each state's possibilites
+ *
+ * ** STRATEGIES INCLUDE **
+ *
+ *  - take the first character and choose / rule out possibilites
+ *  - only possibilites with this letter can be considered further
+ *  - take n characters based on what can be ruled out with these characters (sometimes has to be one, sometimes it can be more than one)
+ *  - repeat / move on to the next state
  */
-
-#[derive(Debug, PartialEq)]
-pub struct Program<'a> {
-  pub r#type: &'a str,
-  pub loc: Option<SourceLocation<'a>>,
-  // todo pub body: [ Directive | Statement ],
-}
-
-#[derive(Debug, PartialEq)]
-pub struct SourceLocation<'a> {
-  pub source: Option<&'a str>,
-  pub start: Position,
-  pub end: Position,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct Position {
-  pub line: u16,
-  pub column: u16,
-}
 
 pub fn parse(source_code: &str) -> Program {
   Program {
