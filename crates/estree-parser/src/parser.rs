@@ -43,6 +43,10 @@ use crate::state::program;
  * @see https://dev.to/khaosdoctor/node-js-under-the-hood-10-compiler-optimizations-5dol
  */
 
+/*
+ * IDEA, name the cli calais, because https://de.wikipedia.org/wiki/Estrée
+ */
+
 pub fn parse(source_code: &str) -> Program {
   Program {
     r#type: "Program",
