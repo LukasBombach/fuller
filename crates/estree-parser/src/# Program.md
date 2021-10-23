@@ -39,37 +39,35 @@ async function *
 
 ```
 ;
-
 {
+a  sync function
+a  sync function *
 
-async function
-async function *
+b  reak
 
-break
+c  lass
+c  onst
+c  ontinue
 
-class
-const
-continue
+d  ebugger
+d  o
 
-debugger
-do
+f  or
+f  or
+f  unction
+f  unction *
 
-for
-for
-function
-function *
+i  f
 
-if
+l  et
 
-let
+r  eturn
 
-return
+t  hrow
+t  ry
 
-throw
-try
+v  ar
 
-var
-
-while
-with
+w  hile
+w  ith
 ```
