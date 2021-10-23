@@ -7,4 +7,5 @@ edition = "2018"
 
 [dependencies]
 logos = "0.12.0"
+phf = { version = "0.10.0", features = ["macros"] }
 unicode-segmentation = "1.8.0"
