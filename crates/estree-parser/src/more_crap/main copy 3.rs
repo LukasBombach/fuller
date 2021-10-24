@@ -1,12 +1,11 @@
 extern crate ucd;
 use std::str::Chars;
-use ucd::Codepoint;
 
 #[derive(Debug, PartialEq)]
 enum Inner {
     Block,
     EmptyStatement,
-    DoWhileStatement,
+    DoWhileLoop,
     IfStatement,
     ForLoop,
     LexicalDeclaration,
@@ -22,7 +21,6 @@ enum Inner {
     FunctionDeclaration,
     AsyncKeyword,
     Identifier,
-    Eos,
 }
 
 fn get_inner_ast_type(mut code: Chars) -> Inner {
@@ -30,11 +28,7 @@ fn get_inner_ast_type(mut code: Chars) -> Inner {
         Some('{') => Inner::Block,
         Some(';') => Inner::EmptyStatement,
         Some('d') => match code.next() {
-            Some('o') => match code.next() {
-                Some(c) if c.is_id_continue() => Inner::Identifier,
-                Some(_) => Inner::DoWhileStatement,
-                None => Inner::Eos,
-            },
+            Some('o') => Inner::DoWhileLoop,
             _ => Inner::Identifier,
         },
         Some('i') => match code.next() {
