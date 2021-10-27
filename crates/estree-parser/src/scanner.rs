@@ -10,8 +10,12 @@ pub enum Token {
   Identifier(String),
   Literal(String),
   VariableDeclaration(String),
+  Unknown(String),
+  Number(u32),
+  Const,
+  Semicolon,
+  EqalOperator,
   LineBreak,
-  Eos,
 }
 
 // todo avoid heap allocation with String for performance
@@ -39,9 +43,12 @@ impl<'a> Iterator for Scanner<'a> {
         Some(c) if self.is_whitespace(&c) => continue,
         Some(c) if self.is_id_start(&c) => return self.identifier(&c),
         Some(c) if self.is_quote(&c) => return self.literal(&c),
+        Some(c) if self.is_number(&c) => return self.number(&c),
+        Some(';') => return Some(Token::Semicolon),
         Some('\n') => return Some(Token::LineBreak),
         Some('\r') => continue,
-        None => return Some(Token::Eos),
+        Some(c) => return Some(Token::Unknown(c.to_string())),
+        None => return None,
       }
     }
   }
@@ -83,8 +90,7 @@ impl<'a> Scanner<'a> {
       .collect::<String>();
 
     value.push_str(&continued_value);
-
-    return Some(Token::Identifier(value));
+    Some(Token::Identifier(value))
   }
 }
 
@@ -119,6 +125,13 @@ impl<'a> Scanner<'a> {
   fn is_quote(&self, c: &char) -> bool {
     match c {
       '"' | '\'' => true,
+      _ => false,
+    }
+  }
+
+  fn is_number(&self, c: &char) -> bool {
+    match c {
+      1..9 => true,
       _ => false,
     }
   }
