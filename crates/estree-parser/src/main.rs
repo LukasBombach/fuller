@@ -1,5 +1,6 @@
 pub mod ecma_charset;
 pub mod scanner;
+pub mod source;
 use scanner::Scanner;
 
 fn main() {

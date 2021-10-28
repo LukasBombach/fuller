@@ -71,10 +71,7 @@ impl<'a> Iterator for Scanner<'a> {
       match self.next_input() {
         Some('=') => return Some(Token::EqalOperator),
         Some(';') => return Some(Token::Semicolon),
-        Some('\n') => {
-          self.loc.newline();
-          return Some(Token::LineBreak);
-        }
+        Some('\n') => return self.newline(),
         Some('\r') => continue,
         Some(c) if c.is_whitespace() => continue,
         Some(c) if c.is_id_start() => return self.identifier(&c),
@@ -88,6 +85,11 @@ impl<'a> Iterator for Scanner<'a> {
 }
 
 impl<'a> Scanner<'a> {
+  fn newline(&mut self) -> Option<Token> {
+    self.loc.newline();
+    Some(Token::LineBreak)
+  }
+
   // todo avoid heap allocation with String for performance
   fn literal(&mut self, quote_symbol: &char) -> Option<Token> {
     let mut value = String::new();
