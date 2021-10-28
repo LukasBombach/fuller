@@ -53,10 +53,8 @@ impl<'a> Iterator for Scanner<'a> {
   }
 }
 
-/**
- * Tokens
- */
 impl<'a> Scanner<'a> {
+  // todo avoid heap allocation with String for performance
   fn literal(&mut self, quote_symbol: &char) -> Option<Token> {
     let mut value = String::new();
     loop {
@@ -76,6 +74,7 @@ impl<'a> Scanner<'a> {
     Some(Token::Literal(value))
   }
 
+  // todo avoid heap allocation with String for performance
   fn identifier(&mut self, first_char: &char) -> Option<Token> {
     let mut value = first_char.to_string();
     let continued_value = self
@@ -91,6 +90,7 @@ impl<'a> Scanner<'a> {
     }
   }
 
+  // todo avoid heap allocation with String for performance
   fn number(&mut self, first_char: &char) -> Option<Token> {
     let mut value = first_char.to_string();
     let continued_value = self
