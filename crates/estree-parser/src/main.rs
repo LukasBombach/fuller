@@ -1,6 +1,7 @@
 pub mod ecma_charset;
 pub mod scanner;
 pub mod source;
+pub mod token;
 use scanner::Scanner;
 
 fn main() {
@@ -8,5 +9,5 @@ fn main() {
 
   scanner
     .into_iter()
-    .for_each(|token| println!("{:?}", token));
+    .for_each(|token| println!("{:#?}", token));
 }

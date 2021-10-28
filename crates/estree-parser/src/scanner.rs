@@ -1,48 +1,13 @@
 use crate::ecma_charset::EcmaCharset;
+use crate::token::Position;
+use crate::token::Token;
+use crate::token::TokenType;
+use crate::token::Value;
 
 use std::iter::Peekable;
 use std::str::Chars;
 use std::string::String;
 
-// todo avoid heap allocation with String for performance
-#[derive(Debug, PartialEq)]
-pub enum Token {
-  Identifier(String),
-  Literal(String),
-  VariableDeclaration(String),
-  Unknown(String),
-  Number(u32),
-  Semicolon,
-  EqalOperator,
-  LineBreak,
-}
-
-struct Location {
-  pub start: Position,
-  pub end: Position,
-}
-
-struct Position {
-  pub line: u16,
-  pub column: u16,
-}
-
-impl Position {
-  pub fn zero() -> Self {
-    Self { line: 0, column: 0 }
-  }
-
-  pub fn advance(&mut self) {
-    self.column += 1;
-  }
-
-  pub fn newline(&mut self) {
-    self.line += 1;
-    self.column = 0;
-  }
-}
-
-// todo avoid heap allocation with String for performance
 pub struct Scanner<'a> {
   input: Peekable<Chars<'a>>,
   loc: Position,
@@ -55,29 +20,29 @@ impl<'a> Scanner<'a> {
       loc: Position::zero(),
     }
   }
-
-  fn next_input(&mut self) -> Option<char> {
-    self.loc.advance();
-    self.input.next()
-  }
 }
 
-// todo maybe match the first char against a narrowed down list of keywords so we know what we got a little earlier
 impl<'a> Iterator for Scanner<'a> {
   type Item = Token;
 
   fn next(&mut self) -> Option<Self::Item> {
     loop {
-      match self.next_input() {
-        Some('=') => return Some(Token::EqalOperator),
-        Some(';') => return Some(Token::Semicolon),
-        Some('\n') => return self.newline(),
+      match self.input.next() {
+        Some('=') => return self.token(TokenType::Punctuator, Value::Str(String::from("=")), 1),
+        Some(';') => return self.token(TokenType::Punctuator, Value::Str(String::from(";")), 1),
+        Some('\n') => {
+          self.loc.newline();
+          continue;
+        }
         Some('\r') => continue,
-        Some(c) if c.is_whitespace() => continue,
+        Some(c) if c.is_whitespace() => {
+          self.loc.advance(1);
+          continue;
+        }
         Some(c) if c.is_id_start() => return self.identifier(&c),
         Some(c) if c.is_quote() => return self.literal(&c),
         Some(c) if c.is_number() => return self.number(&c),
-        Some(c) => return Some(Token::Unknown(c.to_string())),
+        Some(c) => panic!("unable to parse {}", c),
         None => return None,
       }
     }
@@ -85,12 +50,18 @@ impl<'a> Iterator for Scanner<'a> {
 }
 
 impl<'a> Scanner<'a> {
-  fn newline(&mut self) -> Option<Token> {
-    self.loc.newline();
-    Some(Token::LineBreak)
+  fn token(&mut self, tokentype: TokenType, value: Value, advance_by: usize) -> Option<Token> {
+    let start = self.loc.clone();
+    self.loc.advance(advance_by);
+    let end = self.loc.clone();
+    Some(Token {
+      tokentype,
+      value,
+      start,
+      end,
+    })
   }
 
-  // todo avoid heap allocation with String for performance
   fn literal(&mut self, quote_symbol: &char) -> Option<Token> {
     let mut value = String::new();
     loop {
@@ -107,10 +78,19 @@ impl<'a> Scanner<'a> {
         None => break,
       }
     }
-    Some(Token::Literal(value))
+
+    let start = self.loc.clone();
+    self.loc.advance(value.len());
+    let end = self.loc.clone();
+
+    Some(Token {
+      tokentype: TokenType::StringLiteral,
+      value: Value::Str(value),
+      start,
+      end,
+    })
   }
 
-  // todo avoid heap allocation with String for performance
   fn identifier(&mut self, first_char: &char) -> Option<Token> {
     let mut value = first_char.to_string();
     let continued_value = self
@@ -120,13 +100,26 @@ impl<'a> Scanner<'a> {
       .collect::<String>();
     value.push_str(&continued_value);
 
+    let start = self.loc.clone();
+    self.loc.advance(value.len());
+    let end = self.loc.clone();
+
     match value.as_ref() {
-      "const" => Some(Token::VariableDeclaration(value)),
-      _ => Some(Token::Identifier(value)),
+      "const" => Some(Token {
+        tokentype: TokenType::Keyword,
+        value: Value::Str(value),
+        start,
+        end,
+      }),
+      _ => Some(Token {
+        tokentype: TokenType::Identifier,
+        value: Value::Str(value),
+        start,
+        end,
+      }),
     }
   }
 
-  // todo avoid heap allocation with String for performance
   fn number(&mut self, first_char: &char) -> Option<Token> {
     let mut value = first_char.to_string();
     let continued_value = self
@@ -135,6 +128,16 @@ impl<'a> Scanner<'a> {
       .take_while(|c| c.is_number())
       .collect::<String>();
     value.push_str(&continued_value);
-    Some(Token::Number(value.parse::<u32>().unwrap()))
+
+    let start = self.loc.clone();
+    self.loc.advance(value.len());
+    let end = self.loc.clone();
+
+    Some(Token {
+      tokentype: TokenType::NumericLiteral,
+      value: Value::Num(value.parse::<f64>().unwrap()),
+      start,
+      end,
+    })
   }
 }
