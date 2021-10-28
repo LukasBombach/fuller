@@ -17,16 +17,48 @@ pub enum Token {
   LineBreak,
 }
 
+struct Location {
+  pub start: Position,
+  pub end: Position,
+}
+
+struct Position {
+  pub line: u16,
+  pub column: u16,
+}
+
+impl Position {
+  pub fn zero() -> Self {
+    Self { line: 0, column: 0 }
+  }
+
+  pub fn advance(&mut self) {
+    self.column += 1;
+  }
+
+  pub fn newline(&mut self) {
+    self.line += 1;
+    self.column = 0;
+  }
+}
+
 // todo avoid heap allocation with String for performance
 pub struct Scanner<'a> {
   input: Peekable<Chars<'a>>,
+  loc: Position,
 }
 
 impl<'a> Scanner<'a> {
   pub fn new(input: &'a str) -> Self {
     Self {
       input: input.chars().peekable(),
+      loc: Position::zero(),
     }
+  }
+
+  fn next_input(&mut self) -> Option<char> {
+    self.loc.advance();
+    self.input.next()
   }
 }
 
@@ -36,10 +68,13 @@ impl<'a> Iterator for Scanner<'a> {
 
   fn next(&mut self) -> Option<Self::Item> {
     loop {
-      match self.input.next() {
+      match self.next_input() {
         Some('=') => return Some(Token::EqalOperator),
         Some(';') => return Some(Token::Semicolon),
-        Some('\n') => return Some(Token::LineBreak),
+        Some('\n') => {
+          self.loc.newline();
+          return Some(Token::LineBreak);
+        }
         Some('\r') => continue,
         Some(c) if c.is_whitespace() => continue,
         Some(c) if c.is_id_start() => return self.identifier(&c),
