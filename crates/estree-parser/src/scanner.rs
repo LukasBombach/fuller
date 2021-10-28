@@ -12,7 +12,6 @@ pub enum Token {
   VariableDeclaration(String),
   Unknown(String),
   Number(u32),
-  Const,
   Semicolon,
   EqalOperator,
   LineBreak,
@@ -85,7 +84,7 @@ impl<'a> Scanner<'a> {
     value.push_str(&continued_value);
 
     match value.as_ref() {
-      "const" => Some(Token::Const),
+      "const" => Some(Token::VariableDeclaration(value)),
       _ => Some(Token::Identifier(value)),
     }
   }
