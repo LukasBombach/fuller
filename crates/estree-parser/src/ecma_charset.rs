@@ -12,7 +12,14 @@ impl EcmaCharset for char {
   }
 
   fn is_id_continue(&self) -> bool {
-    matches!(self, '$' | '_' | 'A'..='Z' | 'a'..='z' | '0'..='9' | '\u{005C}')
+    matches!(self, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '$' | '\u{005C}')
+  }
+
+  fn is_number(&self) -> bool {
+    matches!(self, '0'..='9')
+  }
+  fn is_quote(&self) -> bool {
+    matches!(self, '"' | '\'')
   }
 
   fn is_whitespace(&self) -> bool {
@@ -40,13 +47,5 @@ impl EcmaCharset for char {
         | '\u{205F}'
         | '\u{3000}'
     )
-  }
-
-  fn is_quote(&self) -> bool {
-    matches!(self, '"' | '\'')
-  }
-
-  fn is_number(&self) -> bool {
-    matches!(self, '0'..='9')
   }
 }

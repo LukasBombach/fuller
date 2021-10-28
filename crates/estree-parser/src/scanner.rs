@@ -30,7 +30,7 @@ impl<'a> Iterator for Scanner<'a> {
         Some('=') => return self.punctuator('='),
         Some(';') => return self.punctuator(';'),
         Some('\n') => self.newline(),
-        Some('\r') => self.ignore(),
+        Some('\r') => self.vanish(),
         Some(c) if c.is_whitespace() => self.skip(),
         Some(c) if c.is_id_start() => return self.identifier(&c),
         Some(c) if c.is_quote() => return self.literal(&c),
@@ -51,7 +51,7 @@ impl<'a> Scanner<'a> {
     self.loc.advance(1);
   }
 
-  fn ignore(&mut self) {}
+  fn vanish(&mut self) {}
 
   fn newline(&mut self) {
     self.loc.newline();
