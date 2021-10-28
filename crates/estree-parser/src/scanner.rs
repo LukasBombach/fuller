@@ -84,7 +84,11 @@ impl<'a> Scanner<'a> {
       .take_while(|c| c.is_id_continue())
       .collect::<String>();
     value.push_str(&continued_value);
-    Some(Token::Identifier(value))
+
+    match value.as_ref() {
+      "const" => Some(Token::Const),
+      _ => Some(Token::Identifier(value)),
+    }
   }
 
   fn number(&mut self, first_char: &char) -> Option<Token> {

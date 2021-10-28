@@ -3,7 +3,7 @@ pub mod scanner;
 use scanner::Scanner;
 
 fn main() {
-  let scanner = Scanner::new("const myConst = 123;");
+  let scanner = Scanner::new("const myvar = 'my value';");
 
   scanner
     .into_iter()
