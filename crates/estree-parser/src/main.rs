@@ -1,9 +1,9 @@
-mod scanner;
-
+pub mod ecma_charset;
+pub mod scanner;
 use scanner::Scanner;
 
 fn main() {
-  let scanner = Scanner::new("const a = 1;");
+  let scanner = Scanner::new("const myConst = 123;");
 
   scanner
     .into_iter()
