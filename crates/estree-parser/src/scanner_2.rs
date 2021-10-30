@@ -44,20 +44,14 @@ impl<'input> Scanner<'input> {
   }
 
   fn next_whitespace_idx(&self, mut idx: usize) -> usize {
-    while let Some(c) = self.get_at(idx) {
-      if c == " " {
-        return idx;
-      }
+    while self.get_at(idx) != Some(" ") {
       idx += 1;
     }
     idx
   }
 
   fn next_non_whitespace_idx(&self, mut idx: usize) -> usize {
-    while let Some(c) = self.get_at(idx) {
-      if c != " " {
-        return idx;
-      }
+    while self.get_at(idx) == Some(" ") {
       idx += 1;
     }
     idx

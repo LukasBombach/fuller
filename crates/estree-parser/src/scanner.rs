@@ -4,19 +4,18 @@ use crate::token::Token;
 use crate::token::TokenType;
 use crate::token::Value;
 
-use std::iter::Peekable;
 use std::str::Chars;
 use std::string::String;
 
 pub struct Scanner<'a> {
-  input: Peekable<Chars<'a>>,
+  input: Chars<'a>,
   loc: Position,
 }
 
 impl<'a> Scanner<'a> {
   pub fn new(input: &'a str) -> Self {
     Self {
-      input: input.chars().peekable(),
+      input: input.chars(),
       loc: Position::zero(),
     }
   }
@@ -28,17 +27,11 @@ impl<'a> Iterator for Scanner<'a> {
   fn next(&mut self) -> Option<Self::Item> {
     loop {
       match self.input.next() {
-        Some('=') => return self.token(TokenType::Punctuator, Value::Str(String::from("=")), 1),
-        Some(';') => return self.token(TokenType::Punctuator, Value::Str(String::from(";")), 1),
-        Some('\n') => {
-          self.loc.newline();
-          continue;
-        }
-        Some('\r') => continue,
-        Some(c) if c.is_whitespace() => {
-          self.loc.advance(1);
-          continue;
-        }
+        Some('=') => return self.punctuator('='),
+        Some(';') => return self.punctuator(';'),
+        Some('\n') => self.newline(),
+        Some('\r') => self.vanish(),
+        Some(c) if c.is_whitespace() => self.skip(),
         Some(c) if c.is_id_start() => return self.identifier(&c),
         Some(c) if c.is_quote() => return self.literal(&c),
         Some(c) if c.is_number() => return self.number(&c),
@@ -50,6 +43,20 @@ impl<'a> Iterator for Scanner<'a> {
 }
 
 impl<'a> Scanner<'a> {
+  fn punctuator(&mut self, value: char) -> Option<Token> {
+    self.token(TokenType::Punctuator, Value::Str(String::from(value)), 1)
+  }
+
+  fn skip(&mut self) {
+    self.loc.advance(1);
+  }
+
+  fn vanish(&mut self) {}
+
+  fn newline(&mut self) {
+    self.loc.newline();
+  }
+
   fn token(&mut self, tokentype: TokenType, value: Value, advance_by: usize) -> Option<Token> {
     let start = self.loc.clone();
     self.loc.advance(advance_by);
