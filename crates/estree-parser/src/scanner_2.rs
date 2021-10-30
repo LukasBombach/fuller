@@ -66,6 +66,10 @@ impl<'input> Scanner<'input> {
   }
 }
 
+/**
+ *   todo extend range to span one character and just use  self.input.get
+ * */
+
 impl<'input> Scanner<'input> {
   fn get_at(&self, idx: usize) -> Option<&'input str> {
     self.input.get(Range {
