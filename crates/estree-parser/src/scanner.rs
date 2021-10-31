@@ -46,6 +46,7 @@ impl<'src> Iterator for Scanner<'src> {
 impl<'src> Scanner<'src> {
   // todo avoid heap allocation with String
   // todo take_while takes one too many characters without returning it
+  #[inline]
   fn identifier(&mut self, first_char: char) -> Option<Token> {
     let continued_characters = self
       .source
@@ -59,6 +60,7 @@ impl<'src> Scanner<'src> {
 
   // todo avoid heap allocation with String
   // todo take_while takes one too many characters without returning it
+  #[inline]
   fn literal(&mut self, quot: char) -> Option<Token> {
     let continued_characters = self
       .source
@@ -72,6 +74,7 @@ impl<'src> Scanner<'src> {
 
   // todo avoid heap allocation with String
   // todo take_while takes one too many characters without returning it
+  #[inline]
   fn number(&mut self, first_num: char) -> Option<Token> {
     let continued_characters = self
       .source
@@ -82,12 +85,12 @@ impl<'src> Scanner<'src> {
     let len = identifier.len();
     self.token(Token::Identifier(identifier), len)
   }
-
+  #[inline]
   fn token(&mut self, token: Token, length: usize) -> Option<Token> {
     self.position.column += length;
     Some(token)
   }
-
+  #[inline]
   fn newline(&mut self) -> Option<Token> {
     self.position.column = 0;
     Some(Token::Newline)
