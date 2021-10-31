@@ -1,13 +1,12 @@
 pub mod scanner;
-pub mod source;
 pub mod token;
 
-use source::Source;
+use scanner::Scanner;
 
 fn main() {
-  let source = Source::new("const myvar = 'my value';");
+  let scanner = Scanner::new("const myvar = 'my value';".chars());
 
-  source
+  scanner
     .into_iter()
     .for_each(|token| println!("{:#?}", token));
 }

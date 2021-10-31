@@ -1,5 +1,6 @@
 use std::string::String;
 
+#[derive(Debug)]
 pub enum Token {
   Eq,
   Semicolon,
@@ -7,4 +8,6 @@ pub enum Token {
   Newline,
   Const,
   Identifier(String),
+  Literal(String),
+  Number(String),
 }
