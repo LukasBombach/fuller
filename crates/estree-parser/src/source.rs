@@ -1,13 +1,30 @@
+use std::ops::Add;
 use std::ops::Range;
 
-pub struct Scanner<'input> {
+/* pub trait SourceRange<'a, Idx> {
+  fn get_one(idx: Idx) -> Self;
+}
+
+impl<'a, Idx> SourceRange<'a, Idx> for Range<Idx>
+where
+  Idx: Add,
+{
+  fn get_one(idx: Idx) -> Self {
+    Range {
+      start: idx,
+      end: idx + 1,
+    }
+  }
+} */
+
+pub struct Source<'input> {
   pub input: &'input str,
   pub len: usize,
   pos: usize,
   loc: Location,
 }
 
-impl<'input> Scanner<'input> {
+impl<'input> Source<'input> {
   pub fn new(input: &'input str) -> Self {
     Self {
       input,
@@ -24,7 +41,7 @@ pub struct Location {
   pub column: usize,
 }
 
-impl<'input> Iterator for Scanner<'input> {
+impl<'input> Iterator for Source<'input> {
   type Item = &'input str;
 
   fn next(&mut self) -> Option<Self::Item> {
@@ -32,7 +49,7 @@ impl<'input> Iterator for Scanner<'input> {
   }
 }
 
-impl<'input> Scanner<'input> {
+impl<'input> Source<'input> {
   fn next_word(&mut self) -> Option<&'input str> {
     if self.pos == self.len {
       return None;
@@ -70,7 +87,7 @@ impl<'input> Scanner<'input> {
  *   todo extend range to span one character and just use  self.input.get
  * */
 
-impl<'input> Scanner<'input> {
+impl<'input> Source<'input> {
   fn get_at(&self, idx: usize) -> Option<&'input str> {
     self.input.get(Range {
       start: idx,
