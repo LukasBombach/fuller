@@ -41,15 +41,23 @@ pub struct Location {
   pub column: usize,
 }
 
-impl<'input> Iterator for Source<'input> {
+/* impl<'input> Iterator for Source<'input> {
   type Item = &'input str;
 
   fn next(&mut self) -> Option<Self::Item> {
     self.next_word()
   }
-}
+} */
 
 impl<'input> Source<'input> {
+  pub fn next_non_whitespace(&mut self) -> Option<&'input str> {
+    self.pos = self.next_non_whitespace_idx(self.pos);
+    self.input.get(Range {
+      start: self.pos,
+      end: self.pos + 1,
+    })
+  }
+
   fn next_word(&mut self) -> Option<&'input str> {
     if self.pos == self.len {
       return None;

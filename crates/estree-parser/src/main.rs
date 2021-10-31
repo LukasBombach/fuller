@@ -1,4 +1,6 @@
-mod source;
+pub mod scanner;
+pub mod source;
+pub mod token;
 
 use source::Source;
 
