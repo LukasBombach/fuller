@@ -1,6 +1,4 @@
 use crate::token::Token;
-// use std::ops::Range;
-// use std::string::String;
 
 pub struct Location {
   pub line: usize,
@@ -26,93 +24,89 @@ impl<'src> Scanner<'src> {
 }
 
 impl<'src> Iterator for Scanner<'src> {
-  type Item = Token;
+  type Item = Token<'src>;
 
   fn next(&mut self) -> Option<Self::Item> {
-    /* if let Some(s) = self.source.get(Range {
-      start: self.pos,
-      end: self.pos + 1,
-    }) {
-      let c = char::from_str(s).unwrap();
-    } */
-
     if self.pos == self.len {
       return None;
     }
 
+    // todo this is akward
+    self.skip_whitespace();
+
     // todo use pointers, not values
     let next_token = match self.source.as_bytes()[self.pos] as char {
-      // ' ' => {}
       '=' => self.token(Token::Eq, 1),
       ';' => self.token(Token::Semicolon, 1),
-      '\n' => self.newline(),
-      '\r' => self.newline(),
-      // c if matches!(c, 'a'..='z' | 'A'..='Z' | '_' | '$') => return self.identifier(c),
+      '\n' => self.newline(1),
+      '\r' => self.newline(1),
+      c if matches!(c, 'a'..='z' | 'A'..='Z' | '_' | '$') => return self.identifier(),
       // c if matches!(c, '"' | '\'') => return self.literal(c),
       // c if matches!(c, '0'..='9') => return self.number(c),
       // todo c matches unicode ID_Start
       c => self.token(Token::Unknown(c), 1),
     };
 
-    self.pos += 1;
-
     next_token
   }
 }
 
 impl<'src> Scanner<'src> {
-  /*
-  // todo avoid heap allocation with String
-  // todo take_while takes one too many characters without returning it
+  // todo this seems like a highly ineffective implementation
   #[inline]
-  fn identifier(&mut self, first_char: char) -> Option<Token> {
-    let continued_characters = self
-      .source
-      .by_ref()
-      .take_while(|c| *c != ' ')
-      .collect::<String>();
-    let identifier = format!("{}{}", first_char, continued_characters);
-    let len = identifier.len();
-    self.token(Token::Identifier(identifier), len)
+  fn find_offset<P>(&self, predicate: P) -> usize
+  where
+    Self: Sized,
+    P: Fn(char) -> bool,
+  {
+    let source_from_pos = &self.source[self.pos..];
+    match source_from_pos.find(predicate) {
+      Some(offset) => offset,
+      None => source_from_pos.len(),
+    }
   }
 
-  // todo avoid heap allocation with String
-  // todo take_while takes one too many characters without returning it
+  // todo this is even worse than find_offset
   #[inline]
-  fn literal(&mut self, quot: char) -> Option<Token> {
-    let continued_characters = self
-      .source
-      .by_ref()
-      .take_while(|c| *c != quot)
-      .collect::<String>();
-    let identifier = format!("{}{}{}", quot, continued_characters, quot);
-    let len = identifier.len();
-    self.token(Token::Literal(identifier), len)
+  fn find_position<P>(&self, predicate: P) -> usize
+  where
+    Self: Sized,
+    P: Fn(char) -> bool,
+  {
+    let offset = self.find_offset(predicate);
+    self.pos + offset
+  }
+}
+
+impl<'src> Scanner<'src> {
+  #[inline]
+  fn skip_whitespace(&mut self) {
+    let idx = self.find_offset(|c| c != ' ');
+    self.pos += idx;
+    self.loc.column += idx;
+  }
+}
+
+impl<'src> Scanner<'src> {
+  #[inline]
+  fn identifier(&mut self) -> Option<Token<'src>> {
+    let end = self.find_position(|c| c == ' ');
+    let val = &self.source[self.pos..end];
+    return self.token(Token::Identifier(val), end - self.pos);
   }
 
-  // todo avoid heap allocation with String
-  // todo take_while takes one too many characters without returning it
   #[inline]
-  fn number(&mut self, first_num: char) -> Option<Token> {
-    let continued_characters = self
-      .source
-      .by_ref()
-      .take_while(|c| matches!(*c, '1'..='9'))
-      .collect::<String>();
-    let identifier = format!("{}{}", first_num, continued_characters);
-    let len = identifier.len();
-    self.token(Token::Identifier(identifier), len)
-  } */
-
-  #[inline]
-  fn token(&mut self, token: Token, length: usize) -> Option<Token> {
-    self.loc.column += length;
+  fn token(&mut self, token: Token<'src>, len: usize) -> Option<Token<'src>> {
+    self.pos += len;
+    self.loc.column += len;
     Some(token)
   }
 
   #[inline]
-  fn newline(&mut self) -> Option<Token> {
+  fn newline(&mut self, len: usize) -> Option<Token<'src>> {
+    self.pos += len;
     self.loc.column = 0;
+    self.loc.line += 1;
     Some(Token::Newline)
   }
 }

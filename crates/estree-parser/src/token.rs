@@ -1,14 +1,12 @@
-use std::string::String;
-
 #[derive(Debug)]
-pub enum Token {
+pub enum Token<'a> {
   Eq,
   Semicolon,
   Keyword,
   Newline,
   Const,
   Unknown(char),
-  Identifier(String),
-  Literal(String),
-  Number(String),
+  Identifier(&'a str),
+  Literal(&'a str),
+  Number(&'a str),
 }
