@@ -1,44 +1,27 @@
 use std::ops::Range;
 
-#[allow(dead_code)]
-pub struct Source<'input> {
-  pub input: &'input str,
-  pub len: usize,
-  pos: usize,
+pub trait Source {
+  fn find_idx<P>(&self, idx: usize, predicate: P) -> Option<usize>
+  where
+    Self: Sized,
+    P: Fn(&str) -> bool;
 }
 
-impl<'input> Source<'input> {
-  pub fn new(input: &'input str) -> Self {
-    Self {
-      input,
-      len: input.len(),
-      pos: 0,
-    }
-  }
-}
-
-impl<'input> Source<'input> {
-  pub fn find_idx<P>(&self, mut idx: usize, predicate: P) -> usize
+impl Source for &str {
+  fn find_idx<P>(&self, mut idx: usize, predicate: P) -> Option<usize>
   where
     Self: Sized,
     P: Fn(&str) -> bool,
   {
-    while let Some(c) = self.input.get(Range {
+    while let Some(c) = self.get(Range {
       start: idx,
       end: idx + 1,
     }) {
       if predicate(c) {
-        break;
+        return Some(idx);
       }
       idx += 1;
     }
-    idx
+    None
   }
-}
-
-fn main() {
-  let source = Source::new("const x = 'v';");
-  let idx = source.find_idx(0, |c| c == " ");
-  let val = &source.input[..idx];
-  println!("{} `{}`", idx, val);
 }
