@@ -1,26 +1,22 @@
 use crate::token::Token;
-// use std::ops::Range;
-// use std::string::String;
+use std::str::Chars;
+use std::string::String;
 
-pub struct Location {
+pub struct Position {
   pub line: usize,
   pub column: usize,
 }
 
 pub struct Scanner<'src> {
-  source: &'src str,
-  loc: Location,
-  len: usize,
-  pos: usize,
+  source: Chars<'src>,
+  position: Position,
 }
 
 impl<'src> Scanner<'src> {
-  pub fn new(source: &'src str) -> Self {
+  pub fn new(source: Chars<'src>) -> Self {
     Self {
       source,
-      loc: Location { line: 0, column: 0 },
-      len: source.len(),
-      pos: 0,
+      position: Position { line: 0, column: 0 },
     }
   }
 }
@@ -29,38 +25,25 @@ impl<'src> Iterator for Scanner<'src> {
   type Item = Token;
 
   fn next(&mut self) -> Option<Self::Item> {
-    /* if let Some(s) = self.source.get(Range {
-      start: self.pos,
-      end: self.pos + 1,
-    }) {
-      let c = char::from_str(s).unwrap();
-    } */
-
-    if self.pos == self.len {
-      return None;
+    loop {
+      match self.source.next() {
+        Some(' ') => {}
+        Some('=') => return self.token(Token::Eq, 1),
+        Some(';') => return self.token(Token::Semicolon, 1),
+        Some('\n') => return self.newline(),
+        Some('\r') => {}
+        Some(c) if matches!(c, 'a'..='z' | 'A'..='Z' | '_' | '$') => return self.identifier(c),
+        Some(c) if matches!(c, '"' | '\'') => return self.literal(c),
+        Some(c) if matches!(c, '0'..='9') => return self.number(c),
+        // todo c matches unicode ID_Start
+        Some(c) => panic!("unable to parse `{}`", c),
+        None => return None,
+      }
     }
-
-    let next_token = match self.source.as_bytes()[self.pos] as char {
-      // ' ' => {}
-      '=' => self.token(Token::Eq, 1),
-      ';' => self.token(Token::Semicolon, 1),
-      '\n' => self.newline(),
-      '\r' => self.newline(),
-      // c if matches!(c, 'a'..='z' | 'A'..='Z' | '_' | '$') => return self.identifier(c),
-      // c if matches!(c, '"' | '\'') => return self.literal(c),
-      // c if matches!(c, '0'..='9') => return self.number(c),
-      // todo c matches unicode ID_Start
-      c => self.token(Token::Unknown(c), 1),
-    };
-
-    self.pos += 1;
-
-    next_token
   }
 }
 
 impl<'src> Scanner<'src> {
-  /*
   // todo avoid heap allocation with String
   // todo take_while takes one too many characters without returning it
   #[inline]
@@ -101,17 +84,15 @@ impl<'src> Scanner<'src> {
     let identifier = format!("{}{}", first_num, continued_characters);
     let len = identifier.len();
     self.token(Token::Identifier(identifier), len)
-  } */
-
+  }
   #[inline]
   fn token(&mut self, token: Token, length: usize) -> Option<Token> {
-    self.loc.column += length;
+    self.position.column += length;
     Some(token)
   }
-
   #[inline]
   fn newline(&mut self) -> Option<Token> {
-    self.loc.column = 0;
+    self.position.column = 0;
     Some(Token::Newline)
   }
 }

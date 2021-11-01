@@ -7,6 +7,7 @@ pub enum Token {
   Keyword,
   Newline,
   Const,
+  Unknown(char),
   Identifier(String),
   Literal(String),
   Number(String),
