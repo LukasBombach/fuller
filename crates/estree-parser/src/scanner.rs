@@ -40,6 +40,7 @@ impl<'src> Iterator for Scanner<'src> {
       return None;
     }
 
+    // todo use pointers, not values
     let next_token = match self.source.as_bytes()[self.pos] as char {
       // ' ' => {}
       '=' => self.token(Token::Eq, 1),
