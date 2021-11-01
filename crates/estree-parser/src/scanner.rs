@@ -35,6 +35,7 @@ impl<'src> Iterator for Scanner<'src> {
     self.skip_whitespace();
 
     // todo use pointers, not values
+    // todo calling as_bytes eacht time is BAAD
     let next_token = match self.source.as_bytes()[self.pos] as char {
       '=' => self.token(Token::Eq, 1),
       ';' => self.token(Token::Semicolon, 1),
