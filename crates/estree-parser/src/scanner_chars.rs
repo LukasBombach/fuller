@@ -1,4 +1,5 @@
 use crate::token_string::Token;
+use std::iter::Peekable;
 use std::str::Chars;
 
 pub struct Location {
@@ -26,13 +27,22 @@ impl<'src> Iterator for Scanner<'src> {
   type Item = Token;
 
   fn next(&mut self) -> Option<Self::Item> {
-    match self.source.find(|c| *c != ' ') {
+    match self
+      .source
+      .by_ref()
+      .skip_while(|c| *c == ' ')
+      .peekable()
+      .peek()
+    {
       Some('=') => self.token(Token::Eq, 1),
       Some(';') => self.token(Token::Semicolon, 1),
       Some('\n') => self.newline(),
       Some('\r') => self.newline(),
       Some(c) if matches!(c, 'a'..='z' | 'A'..='Z' | '_' | '$') => self.identifier(),
-      Some(c) => self.token(Token::Unknown(c), 1),
+      Some(c) => {
+        println!("unknown: `{}`", c);
+        self.token(Token::Unknown('x'), 1)
+      }
       None => None,
     }
   }
@@ -45,7 +55,7 @@ impl<'src> Scanner<'src> {
       .source
       .by_ref()
       .take_while(|c| *c != ' ')
-      .collect::<String>();
+      .collect::<String>(); // .as_str()???
     let len = tail.len();
     self.token(Token::Identifier(tail), len)
   }
