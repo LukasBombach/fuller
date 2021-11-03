@@ -28,7 +28,7 @@ impl<'src> Iterator for Scanner<'src> {
   type Item = Token;
 
   fn next(&mut self) -> Option<Self::Item> {
-    let _ = self.source.skip_while(|c| *c == ' ');
+    // let _ = self.source.skip_while(|c| *c == ' ');
 
     // let c = self.source.peek();
     // .skip_while(|c| *c == ' ');
