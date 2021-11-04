@@ -5,7 +5,8 @@ use std::str::Chars;
 pub struct Source<'src> {
   input: &'src str,
   chars: Enumerate<Chars<'src>>,
-  loc: Location,
+  lines: usize,
+  last_line: usize,
 }
 
 impl<'src> Source<'src> {
@@ -14,7 +15,8 @@ impl<'src> Source<'src> {
     Self {
       input,
       chars: input.chars().enumerate(),
-      loc: Location(0, 0),
+      lines: 0,
+      last_line: 0,
     }
   }
 
@@ -22,8 +24,8 @@ impl<'src> Source<'src> {
     &self.input[start..end]
   }
 
-  pub fn current_location(&self) -> Location {
-    self.loc.clone()
+  pub fn from_pos(&self, pos: usize) -> Location {
+    Location(self.lines, pos - self.last_line)
   }
 }
 
@@ -32,10 +34,9 @@ impl<'src> Iterator for Source<'src> {
 
   fn next(&mut self) -> Option<Self::Item> {
     if let Some(n) = self.chars.next() {
-      match n {
-        (_, '\r') => {}
-        (_, '\n') => self.loc.newline(),
-        (_, _) => self.loc.char(),
+      if let (i, '\n') = n {
+        self.last_line = i;
+        self.lines += 1;
       }
       return Some(n);
     }

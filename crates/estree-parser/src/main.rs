@@ -6,7 +6,7 @@ pub mod token;
 use scanner::Scanner;
 
 fn main() {
-  let scanner = Scanner::new("   const myvar = 'my value';");
+  let scanner = Scanner::new("const myvar = 'my value';");
 
   scanner
     .into_iter()
