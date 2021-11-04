@@ -1,4 +1,4 @@
-// use crate::scanner::Location;
+use crate::location::Location;
 
 #[derive(Debug)]
 pub enum Token<'a> {
@@ -7,12 +7,15 @@ pub enum Token<'a> {
   Keyword,
   Newline,
   Const,
-  Unknown(&'a str),
-  Identifier(&'a str),
-  Literal(&'a str),
-  Number(&'a str),
+  Unknown(Value<'a>),
+  Identifier(Value<'a>),
+  Literal(Value<'a>),
+  Number(Value<'a>),
 }
-// Unknown((&'a str, Location)),
-// Identifier((&'a str, Location)),
-// Literal((&'a str, Location)),
-// Number((&'a str, Location)),
+
+#[derive(Debug)]
+pub struct Value<'a> {
+  pub str: &'a str,
+  pub start: Location,
+  pub end: Location,
+}

@@ -14,11 +14,16 @@ impl<'src> Source<'src> {
     Self {
       input,
       chars: input.chars().enumerate(),
-      loc: Location { line: 0, column: 0 },
+      loc: Location(0, 0),
     }
   }
+
   pub fn slice(&self, start: usize, end: usize) -> &'src str {
     &self.input[start..end]
+  }
+
+  pub fn current_location(&self) -> Location {
+    self.loc.clone()
   }
 }
 

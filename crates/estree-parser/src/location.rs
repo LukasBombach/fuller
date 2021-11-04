@@ -1,16 +1,13 @@
 #[derive(Debug, Clone)]
-pub struct Location {
-  pub line: usize,
-  pub column: usize,
-}
+pub struct Location(pub usize, pub usize);
 
 impl Location {
   pub fn char(&mut self) {
-    self.column += 1;
+    self.1 += 1;
   }
 
   pub fn newline(&mut self) {
-    self.column = 0;
-    self.line += 1;
+    self.1 = 0;
+    self.0 += 1;
   }
 }

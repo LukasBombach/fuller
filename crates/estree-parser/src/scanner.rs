@@ -1,5 +1,6 @@
 use crate::source::Source;
 use crate::token::Token;
+use crate::token::Value;
 
 pub struct Scanner<'src> {
   source: Source<'src>,
@@ -30,10 +31,12 @@ impl<'src> Iterator for Scanner<'src> {
 
 impl<'src> Scanner<'src> {
   #[inline]
-  fn identifier(&mut self, start: usize) -> Option<Token<'src>> {
-    if let Some((end, _)) = self.source.by_ref().take_while(|(_, c)| *c != ' ').last() {
-      let value = self.source.slice(start, end + 1);
-      return Some(Token::Identifier(value));
+  fn identifier(&mut self, start_pos: usize) -> Option<Token<'src>> {
+    let start = self.source.current_location();
+    if let Some((end_pos, _)) = self.source.by_ref().take_while(|(_, c)| *c != ' ').last() {
+      let str = self.source.slice(start_pos, end_pos + 1);
+      let end = self.source.current_location();
+      return Some(Token::Identifier(Value { str, start, end }));
     }
     None
   }
