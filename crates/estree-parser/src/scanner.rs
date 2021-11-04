@@ -24,6 +24,8 @@ impl<'src> Iterator for Scanner<'src> {
         (_, ' ' | '\n' | '\r' | '\t') => {}
         (i, '=') => return self.eq(i),
         (i, ';') => return self.semicolon(i),
+        // (i, '"') => return self.string_literal(i, '"'),
+        // (i, '\'') => return self.string_literal(i, '\''),
         (i, 'a'..='z' | 'A'..='Z' | '_' | '$') => return self.identifier(i),
         (i, c) => println!("pos: {} val: `{}`", i, c),
       }
@@ -46,6 +48,30 @@ impl<'src> Scanner<'src> {
     let end = self.source.from_pos(end_pos);
     return Some(Token::Identifier(Value { str, start, end }));
   }
+
+  /* #[inline]
+  fn string_literal(&mut self, start_pos: usize, quot_char: char) -> Option<Token<'src>> {
+    let start = self.source.from_pos(start_pos);
+
+    for n in self.source.by_ref() {
+      match n {
+        (_, '\\') => {
+          self.source.by_ref().skip(1);
+        }
+        (_, c) if c == quot_char => break,
+        _ => {}
+      }
+    }
+
+    let end_pos = match self.source.find_next_index_exclusive(|c| *c == quot_char) {
+      Some(p) => p,
+      None => self.source.len(),
+    };
+
+    let str = self.source.slice(start_pos, end_pos);
+    let end = self.source.from_pos(end_pos);
+    return Some(Token::Literal(Value { str, start, end }));
+  } */
 
   #[inline]
   fn eq(&mut self, start_pos: usize) -> Option<Token<'src>> {
