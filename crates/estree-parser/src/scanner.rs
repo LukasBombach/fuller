@@ -33,11 +33,14 @@ impl<'src> Scanner<'src> {
   #[inline]
   fn identifier(&mut self, start_pos: usize) -> Option<Token<'src>> {
     let start = self.source.from_pos(start_pos);
-    if let Some((end_pos, _)) = self.source.by_ref().take_while(|(_, c)| *c != ' ').last() {
-      let str = self.source.slice(start_pos, end_pos + 1);
-      let end = self.source.from_pos(end_pos + 1);
-      return Some(Token::Identifier(Value { str, start, end }));
-    }
-    None
+
+    let end_pos = match self.source.find_next_index(|c| *c == ' ') {
+      Some(p) => p,
+      None => self.source.len(),
+    };
+
+    let str = self.source.slice(start_pos, end_pos);
+    let end = self.source.from_pos(end_pos);
+    return Some(Token::Identifier(Value { str, start, end }));
   }
 }
