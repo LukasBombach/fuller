@@ -1,4 +1,5 @@
 use crate::source::Source;
+use crate::token::Pos;
 use crate::token::Token;
 use crate::token::Value;
 
@@ -21,6 +22,8 @@ impl<'src> Iterator for Scanner<'src> {
     while let Some(n) = self.source.next() {
       match n {
         (_, ' ' | '\n' | '\r' | '\t') => {}
+        (i, '=') => return self.eq(i),
+        (i, ';') => return self.semicolon(i),
         (i, 'a'..='z' | 'A'..='Z' | '_' | '$') => return self.identifier(i),
         (i, c) => println!("pos: {} val: `{}`", i, c),
       }
@@ -42,5 +45,22 @@ impl<'src> Scanner<'src> {
     let str = self.source.slice(start_pos, end_pos);
     let end = self.source.from_pos(end_pos);
     return Some(Token::Identifier(Value { str, start, end }));
+  }
+
+  #[inline]
+  fn eq(&mut self, start_pos: usize) -> Option<Token<'src>> {
+    Some(Token::Eq(self.pos(start_pos, 1)))
+  }
+
+  #[inline]
+  fn semicolon(&mut self, start_pos: usize) -> Option<Token<'src>> {
+    Some(Token::Eq(self.pos(start_pos, 1)))
+  }
+
+  #[inline]
+  fn pos(&mut self, start_pos: usize, len: usize) -> Pos {
+    let start = self.source.from_pos(start_pos);
+    let end = self.source.from_pos(start_pos + len);
+    Pos { start, end }
   }
 }
