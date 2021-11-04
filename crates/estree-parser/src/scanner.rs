@@ -1,58 +1,5 @@
+use crate::source::Source;
 use crate::token::Token;
-use std::iter::Enumerate;
-use std::str::Chars;
-
-pub struct Source<'src> {
-  input: &'src str,
-  chars: Enumerate<Chars<'src>>,
-  loc: Location,
-}
-
-impl<'src> Source<'src> {
-  pub fn new(input: &'src str) -> Self {
-    println!("\nInput `{}`\n", input);
-    Self {
-      input,
-      chars: input.chars().enumerate(),
-      loc: Location { line: 0, column: 0 },
-    }
-  }
-  pub fn slice(&self, start: usize, end: usize) -> &'src str {
-    &self.input[start..end]
-  }
-}
-
-impl<'src> Iterator for Source<'src> {
-  type Item = (usize, char);
-
-  fn next(&mut self) -> Option<Self::Item> {
-    if let Some(n) = self.chars.next() {
-      match n {
-        (_, '\r') => {}
-        (_, '\n') => self.loc.newline(),
-        (_, _) => self.loc.char(),
-      }
-      return Some(n);
-    }
-    None
-  }
-}
-
-pub struct Location {
-  pub line: usize,
-  pub column: usize,
-}
-
-impl Location {
-  pub fn char(&mut self) {
-    self.column += 1;
-  }
-
-  pub fn newline(&mut self) {
-    self.column = 0;
-    self.line += 1;
-  }
-}
 
 pub struct Scanner<'src> {
   source: Source<'src>,

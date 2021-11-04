@@ -1,4 +1,6 @@
+pub mod location;
 pub mod scanner;
+pub mod source;
 pub mod token;
 
 use scanner::Scanner;

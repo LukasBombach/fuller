@@ -1,3 +1,5 @@
+// use crate::scanner::Location;
+
 #[derive(Debug)]
 pub enum Token<'a> {
   Eq,
@@ -5,8 +7,12 @@ pub enum Token<'a> {
   Keyword,
   Newline,
   Const,
-  Unknown(char),
+  Unknown(&'a str),
   Identifier(&'a str),
   Literal(&'a str),
   Number(&'a str),
 }
+// Unknown((&'a str, Location)),
+// Identifier((&'a str, Location)),
+// Literal((&'a str, Location)),
+// Number((&'a str, Location)),
