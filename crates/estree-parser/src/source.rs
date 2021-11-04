@@ -58,7 +58,7 @@ impl<'src> Iterator for Source<'src> {
 
 impl<'src> Source<'src> {
   #[inline]
-  pub fn find_next_index<P>(&mut self, predicate: P) -> Option<usize>
+  pub fn find_next_index_exclusive<P>(&mut self, predicate: P) -> Option<usize>
   where
     P: Fn(&char) -> bool,
   {

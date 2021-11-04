@@ -34,7 +34,7 @@ impl<'src> Scanner<'src> {
   fn identifier(&mut self, start_pos: usize) -> Option<Token<'src>> {
     let start = self.source.from_pos(start_pos);
 
-    let end_pos = match self.source.find_next_index(|c| *c == ' ') {
+    let end_pos = match self.source.find_next_index_exclusive(|c| *c == ' ') {
       Some(p) => p,
       None => self.source.len(),
     };
