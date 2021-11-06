@@ -24,8 +24,8 @@ impl<'src> Iterator for Scanner<'src> {
         (_, ' ' | '\n' | '\r' | '\t') => {}
         (i, '=') => return self.eq(i),
         (i, ';') => return self.semicolon(i),
-        // (i, '"') => return self.string_literal(i, '"'),
-        // (i, '\'') => return self.string_literal(i, '\''),
+        (i, '"') => return self.string_literal(i, '"'),
+        (i, '\'') => return self.string_literal(i, '\''),
         (i, 'a'..='z' | 'A'..='Z' | '_' | '$') => return self.identifier(i),
         (i, c) => println!("pos: {} val: `{}`", i, c),
       }
@@ -49,29 +49,33 @@ impl<'src> Scanner<'src> {
     return Some(Token::Identifier(Value { str, start, end }));
   }
 
-  /* #[inline]
-  fn string_literal(&mut self, start_pos: usize, quot_char: char) -> Option<Token<'src>> {
+  // todo do not copy a char but reference the input str
+  // todo end_pos code is really bad
+  #[inline]
+  fn string_literal(&mut self, start_pos: usize, delimiter: char) -> Option<Token<'src>> {
     let start = self.source.from_pos(start_pos);
 
-    for n in self.source.by_ref() {
-      match n {
-        (_, '\\') => {
-          self.source.by_ref().skip(1);
+    let end_pos: usize = {
+      let p: usize;
+      loop {
+        match self.source.next() {
+          Some((_, '\\')) => {
+            self.source.next();
+          }
+          Some((i, c)) if c == delimiter => {
+            p = i + 1;
+            break;
+          }
+          _ => continue,
         }
-        (_, c) if c == quot_char => break,
-        _ => {}
       }
-    }
-
-    let end_pos = match self.source.find_next_index_exclusive(|c| *c == quot_char) {
-      Some(p) => p,
-      None => self.source.len(),
+      p
     };
 
     let str = self.source.slice(start_pos, end_pos);
     let end = self.source.from_pos(end_pos);
     return Some(Token::Literal(Value { str, start, end }));
-  } */
+  }
 
   #[inline]
   fn eq(&mut self, start_pos: usize) -> Option<Token<'src>> {
@@ -80,7 +84,7 @@ impl<'src> Scanner<'src> {
 
   #[inline]
   fn semicolon(&mut self, start_pos: usize) -> Option<Token<'src>> {
-    Some(Token::Eq(self.pos(start_pos, 1)))
+    Some(Token::Semicolon(self.pos(start_pos, 1)))
   }
 
   #[inline]
