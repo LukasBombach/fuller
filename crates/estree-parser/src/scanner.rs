@@ -26,6 +26,7 @@ impl<'src> Iterator for Scanner<'src> {
         (i, ';') => return self.semicolon(i),
         (i, '"') => return self.string_literal(i, '"'),
         (i, '\'') => return self.string_literal(i, '\''),
+        // (i, '<') => return self.lt(i),
         (i, 'a'..='z' | 'A'..='Z' | '_' | '$') => return self.identifier(i),
         (i, c) => println!("pos: {} val: `{}`", i, c),
       }
@@ -35,6 +36,36 @@ impl<'src> Iterator for Scanner<'src> {
 }
 
 impl<'src> Scanner<'src> {
+  // todo this does not advance the iterator
+  /* #[inline]
+  fn lt(&mut self, start_pos: usize) -> Option<Token<'src>> {
+    match self.source.peek(start_pos, 1) {
+      Some("=") => Some(Token::Lte(self.pos(start_pos, 2))),
+      Some("<") => match self.source.peek(start_pos + 1, 1) {
+        Some("=") => Some(Token::AssignShl(self.pos(start_pos, 3))),
+        _ => Some(Token::Shl(self.pos(start_pos, 2))),
+      },
+      _ => Some(Token::Lt(self.pos(start_pos, 1))),
+    }
+  } */
+
+  #[inline]
+  fn eq(&mut self, start_pos: usize) -> Option<Token<'src>> {
+    Some(Token::Eq(self.pos(start_pos, 1)))
+  }
+
+  #[inline]
+  fn semicolon(&mut self, start_pos: usize) -> Option<Token<'src>> {
+    Some(Token::Semicolon(self.pos(start_pos, 1)))
+  }
+
+  #[inline]
+  fn pos(&mut self, start_pos: usize, len: usize) -> Pos {
+    let start = self.source.from_pos(start_pos);
+    let end = self.source.from_pos(start_pos + len);
+    Pos { start, end }
+  }
+
   #[inline]
   fn identifier(&mut self, start_pos: usize) -> Option<Token<'src>> {
     let start = self.source.from_pos(start_pos);
@@ -51,6 +82,7 @@ impl<'src> Scanner<'src> {
 
   // todo do not copy a char but reference the input str
   // todo end_pos code is really bad
+  // todo if I implement the iterator myself keeping track of the idx and the len I can just peek and then advance for the given length
   #[inline]
   fn string_literal(&mut self, start_pos: usize, delimiter: char) -> Option<Token<'src>> {
     let start = self.source.from_pos(start_pos);
@@ -75,22 +107,5 @@ impl<'src> Scanner<'src> {
     let str = self.source.slice(start_pos, end_pos);
     let end = self.source.from_pos(end_pos);
     return Some(Token::Literal(Value { str, start, end }));
-  }
-
-  #[inline]
-  fn eq(&mut self, start_pos: usize) -> Option<Token<'src>> {
-    Some(Token::Eq(self.pos(start_pos, 1)))
-  }
-
-  #[inline]
-  fn semicolon(&mut self, start_pos: usize) -> Option<Token<'src>> {
-    Some(Token::Semicolon(self.pos(start_pos, 1)))
-  }
-
-  #[inline]
-  fn pos(&mut self, start_pos: usize, len: usize) -> Pos {
-    let start = self.source.from_pos(start_pos);
-    let end = self.source.from_pos(start_pos + len);
-    Pos { start, end }
   }
 }

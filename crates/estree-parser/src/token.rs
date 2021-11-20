@@ -3,6 +3,10 @@ use crate::location::Location;
 #[derive(Debug)]
 pub enum Token<'a> {
   Eq(Pos),
+  Lt(Pos),
+  Lte(Pos),
+  Shl(Pos),
+  AssignShl(Pos),
   Semicolon(Pos),
   Unknown(Value<'a>),
   Identifier(Value<'a>),

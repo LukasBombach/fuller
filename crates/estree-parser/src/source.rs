@@ -1,5 +1,6 @@
 use crate::location::Location;
 use std::iter::Enumerate;
+use std::ops::Range;
 use std::str::Chars;
 
 pub struct Source<'src> {
@@ -53,6 +54,13 @@ impl<'src> Iterator for Source<'src> {
       return Some(n);
     }
     None
+  }
+}
+
+impl<'src> Source<'src> {
+  #[inline]
+  pub fn peek(&self, start: usize, len: usize) -> Option<&'src str> {
+    self.input.get(start..(start + len))
   }
 }
 
