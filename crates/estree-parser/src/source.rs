@@ -1,6 +1,5 @@
 use crate::location::Location;
 use std::iter::Enumerate;
-use std::ops::Range;
 use std::str::Chars;
 
 pub struct Source<'src> {
