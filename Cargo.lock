@@ -9,10 +9,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "31ad93652f40969dead8d4bf897a41e9462095152eb21c56e5830537e41179dd"
 
 [[package]]
-name = "estree-parser"
-version = "0.1.0"
-
-[[package]]
 name = "expect-test"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
