@@ -7,49 +7,49 @@ fn main() {
     while !src.is_empty() {
         let token = first_token(src);
 
-        match token.kind {
+        pos = match token.kind {
             lexer::TokenKind::Eq => {
                 let kind = TokenKind::Eq;
-                let start = pos;
-                let mut end = pos;
-                end.ff(token.len);
-                pos = end;
+                let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
                 println!("{:?}", token);
+                end
             }
             lexer::TokenKind::Semi => {
                 let kind = TokenKind::Semi;
-                let start = pos;
-                let mut end = pos;
-                end.ff(token.len);
-                pos = end;
+                let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
                 println!("{:?}", token);
+                end
             }
             lexer::TokenKind::Ident => {
                 let kind = keyword_or_identifier(&src[..token.len]);
-                let start = pos;
-                let mut end = pos;
-                end.ff(token.len);
-                pos = end;
+                let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
                 println!("{:?}", token);
+                end
             }
-            lexer::TokenKind::Whitespace => {
-                let value = &src[..token.len];
-                match value {
-                    "\n" => pos.nl(),
-                    "\r" => {}
-                    _ => pos.ff(1),
-                }
-            }
+            lexer::TokenKind::Whitespace => match &src[..token.len] {
+                "\n" => pos.nl(),
+                "\r" => pos,
+                _ => pos.ff(1),
+            },
             _ => {
                 println!("{:?} {:?}", token.kind, &src[..token.len]);
+                pos.ff(token.len)
             }
-        }
+        };
 
         src = &src[token.len..];
     }
+}
+
+fn span(start: Position, lines: usize, cols: usize) -> (Position, Position) {
+    let end = Position {
+        line: start.line + lines,
+        col: start.col + cols,
+    };
+    (start, end)
 }
 
 fn keyword_or_identifier(ident: &str) -> TokenKind {
@@ -105,13 +105,18 @@ pub struct Position {
 }
 
 impl Position {
-    fn ff(&mut self, len: usize) {
-        self.col += len;
+    fn ff(self, len: usize) -> Position {
+        Position {
+            col: self.col + len,
+            ..self
+        }
     }
 
-    fn nl(&mut self) {
-        self.line += 1;
-        self.col = 1;
+    fn nl(&self) -> Position {
+        Position {
+            line: self.line + 1,
+            col: 1,
+        }
     }
 }
 
