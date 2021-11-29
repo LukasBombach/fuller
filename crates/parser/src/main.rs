@@ -12,28 +12,40 @@ fn main() {
                 let kind = TokenKind::Eq;
                 let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
-                println!("{:?}", token);
+                println!(
+                    "{:?} {:?}:[{:?}-{:?}]",
+                    token.kind, start.line, start.col, end.col
+                );
                 end
             }
             lexer::TokenKind::Semi => {
                 let kind = TokenKind::Semi;
                 let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
-                println!("{:?}", token);
+                println!(
+                    "{:?} {:?}:[{:?}-{:?}]",
+                    token.kind, start.line, start.col, end.col
+                );
                 end
             }
             lexer::TokenKind::Ident => {
                 let kind = keyword_or_identifier(&src[..token.len]);
                 let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
-                println!("{:?}", token);
+                println!(
+                    "{:?} {:?}:[{:?}-{:?}]",
+                    token.kind, start.line, token.start.col, end.col
+                );
                 end
             }
             lexer::TokenKind::Literal { .. } => {
                 let kind = TokenKind::Literal(&src[..token.len]);
                 let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
-                println!("{:?}", token);
+                println!(
+                    "{:?} {:?}:[{:?}-{:?}]",
+                    token.kind, start.line, start.col, end.col
+                );
                 end
             }
             lexer::TokenKind::Whitespace => match &src[..token.len] {
