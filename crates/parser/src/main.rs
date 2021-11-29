@@ -1,7 +1,7 @@
 use lexer::first_token;
 
 fn main() {
-    let mut src = "const x = 'foo';\nconst y = 'bar';";
+    let mut src = "const x = \"foo\";\nconst y = \"bar\";";
     let mut pos = Position { line: 1, col: 1 };
 
     while !src.is_empty() {
