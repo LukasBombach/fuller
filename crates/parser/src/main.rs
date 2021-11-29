@@ -2,16 +2,47 @@ use lexer::first_token;
 
 fn main() {
     let mut src = "const x = 'foo';\nconst y = 'bar';";
+    let mut pos = Position { line: 1, col: 1 };
 
     while !src.is_empty() {
         let token = first_token(src);
 
         match token.kind {
+            lexer::TokenKind::Eq => {
+                let kind = TokenKind::Eq;
+                let start = pos;
+                let mut end = pos;
+                end.ff(token.len);
+                pos = end;
+                let token = Token { kind, start, end };
+                println!("{:?}", token);
+            }
+            lexer::TokenKind::Semi => {
+                let kind = TokenKind::Semi;
+                let start = pos;
+                let mut end = pos;
+                end.ff(token.len);
+                pos = end;
+                let token = Token { kind, start, end };
+                println!("{:?}", token);
+            }
             lexer::TokenKind::Ident => {
                 let kind = keyword_or_identifier(&src[..token.len]);
-                println!("{:?}", kind);
+                let start = pos;
+                let mut end = pos;
+                end.ff(token.len);
+                pos = end;
+                let token = Token { kind, start, end };
+                println!("{:?}", token);
             }
-            lexer::TokenKind::Whitespace => {}
+            lexer::TokenKind::Whitespace => {
+                let value = &src[..token.len];
+                match value {
+                    "\n" => pos.nl(),
+                    "\r" => {}
+                    _ => pos.ff(1),
+                }
+            }
             _ => {
                 println!("{:?} {:?}", token.kind, &src[..token.len]);
             }
@@ -73,8 +104,34 @@ pub struct Position {
     col: usize,
 }
 
+impl Position {
+    fn ff(&mut self, len: usize) {
+        self.col += len;
+    }
+
+    fn nl(&mut self) {
+        self.line += 1;
+        self.col = 1;
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TokenKind<'a> {
+    /* Expression-operator symbols. */
+    Eq,
+    Lt,
+    Le,
+    EqEq,
+    Ne,
+    Ge,
+    Gt,
+    AndAnd,
+    OrOr,
+    Not,
+
+    /* Structural symbols */
+    Semi,
+
     Identifier(&'a str),
     Keyword(Keyword),
 }
