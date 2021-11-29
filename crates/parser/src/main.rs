@@ -1,7 +1,7 @@
 use lexer::first_token;
 
 fn main() {
-    let mut src = "const x = \"foo\";\nconst y = \"bar\";";
+    let mut src = "const x = \"12\";\nconst y = \"12345678\";";
     let mut pos = Position { line: 1, col: 1 };
 
     while !src.is_empty() {
@@ -29,13 +29,20 @@ fn main() {
                 println!("{:?}", token);
                 end
             }
+            lexer::TokenKind::Literal { .. } => {
+                let kind = TokenKind::Literal(&src[..token.len]);
+                let (start, end) = span(pos, 0, token.len);
+                let token = Token { kind, start, end };
+                println!("{:?}", token);
+                end
+            }
             lexer::TokenKind::Whitespace => match &src[..token.len] {
                 "\n" => pos.nl(),
                 "\r" => pos,
                 _ => pos.ff(1),
             },
             _ => {
-                println!("{:?} {:?}", token.kind, &src[..token.len]);
+                println!("Unhandled Token {:?} {:?}", token.kind, &src[..token.len]);
                 pos.ff(token.len)
             }
         };
@@ -122,7 +129,6 @@ impl Position {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TokenKind<'a> {
-    /* Expression-operator symbols. */
     Eq,
     Lt,
     Le,
@@ -133,11 +139,9 @@ pub enum TokenKind<'a> {
     AndAnd,
     OrOr,
     Not,
-
-    /* Structural symbols */
     Semi,
-
     Identifier(&'a str),
+    Literal(&'a str),
     Keyword(Keyword),
 }
 
