@@ -11,6 +11,7 @@ fn main() {
                 let kind = keyword_or_identifier(&src[..token.len]);
                 println!("{:?}", kind);
             }
+            lexer::TokenKind::Whitespace => {}
             _ => {
                 println!("{:?} {:?}", token.kind, &src[..token.len]);
             }
