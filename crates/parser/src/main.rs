@@ -13,8 +13,9 @@ fn main() {
                 let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
                 println!(
-                    "{:?} {:?}:[{:?}-{:?}]",
-                    token.kind, start.line, start.col, end.col
+                    "{:9} {:?}",
+                    format!("{:?}: {:2}-{:2}", start.line, start.col, end.col),
+                    token.kind
                 );
                 end
             }
@@ -23,8 +24,9 @@ fn main() {
                 let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
                 println!(
-                    "{:?} {:?}:[{:?}-{:?}]",
-                    token.kind, start.line, start.col, end.col
+                    "{:9} {:?}",
+                    format!("{:?}: {:2}-{:2}", start.line, start.col, end.col),
+                    token.kind
                 );
                 end
             }
@@ -33,8 +35,9 @@ fn main() {
                 let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
                 println!(
-                    "{:?} {:?}:[{:?}-{:?}]",
-                    token.kind, start.line, token.start.col, end.col
+                    "{:9} {:?}",
+                    format!("{:?}: {:2}-{:2}", start.line, start.col, end.col),
+                    token.kind
                 );
                 end
             }
@@ -43,8 +46,9 @@ fn main() {
                 let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
                 println!(
-                    "{:?} {:?}:[{:?}-{:?}]",
-                    token.kind, start.line, start.col, end.col
+                    "{:9} {:?}",
+                    format!("{:?}: {:2}-{:2}", start.line, start.col, end.col),
+                    token.kind
                 );
                 end
             }
