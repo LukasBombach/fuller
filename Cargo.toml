@@ -4,5 +4,4 @@ resolver = "2"
 members = [
   "crates/lexer",
   "crates/parser",
-  "crates/estree",
 ]
