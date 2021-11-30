@@ -41,13 +41,6 @@ pub enum TokenKind {
     Ident,
     /// Like the above, but containing invalid unicode codepoints.
     InvalidIdent,
-    /// An unknown prefix like `foo#`, `foo'`, `foo"`. Note that only the
-    /// prefix (`foo`) is included in the token, not the separator (which is
-    /// lexed as its own distinct token). In Rust 2021 and later, reserved
-    /// prefixes are reported as errors; in earlier editions, they result in a
-    /// (allowed by default) lint, and are treated as regular identifier
-    /// tokens.
-    UnknownPrefix,
     /// "12_u8", "1.0e-40", "b"123"". See `LiteralKind` for more details.
     Literal {
         kind: LiteralKind,
@@ -229,7 +222,7 @@ impl Cursor<'_> {
 
             // Identifier (this should be checked after other variant that can
             // start as identifier).
-            c if is_id_start(c) => self.ident_or_unknown_prefix(),
+            c if is_id_start(c) => self.ident(),
 
             // Numeric literal.
             c @ '0'..='9' => {
@@ -281,9 +274,7 @@ impl Cursor<'_> {
                 Literal { kind, suffix_start }
             }
             // Identifier starting with an emoji. Only lexed for graceful error recovery.
-            c if !c.is_ascii() && unic_emoji_char::is_emoji(c) => {
-                self.fake_ident_or_unknown_prefix()
-            }
+            c if !c.is_ascii() && unic_emoji_char::is_emoji(c) => self.fake_ident(),
             _ => Unknown,
         };
         Token::new(token_kind, self.len_consumed())
@@ -351,34 +342,21 @@ impl Cursor<'_> {
         Whitespace
     }
 
-    fn ident_or_unknown_prefix(&mut self) -> TokenKind {
+    fn ident(&mut self) -> TokenKind {
         debug_assert!(is_id_start(self.prev()));
         // Start is already eaten, eat the rest of identifier.
         self.eat_while(is_id_continue);
-        // Known prefixes must have been handled earlier. So if
-        // we see a prefix here, it is definitely an unknown prefix.
-        match self.first() {
-            '#' | '"' | '\'' => UnknownPrefix,
-            c if !c.is_ascii() && unic_emoji_char::is_emoji(c) => {
-                self.fake_ident_or_unknown_prefix()
-            }
-            _ => Ident,
-        }
+        Ident
     }
 
-    fn fake_ident_or_unknown_prefix(&mut self) -> TokenKind {
+    fn fake_ident(&mut self) -> TokenKind {
         // Start is already eaten, eat the rest of identifier.
         self.eat_while(|c| {
             unicode_xid::UnicodeXID::is_xid_continue(c)
                 || (!c.is_ascii() && unic_emoji_char::is_emoji(c))
                 || c == '\u{200d}'
         });
-        // Known prefixes must have been handled earlier. So if
-        // we see a prefix here, it is definitely an unknown prefix.
-        match self.first() {
-            '#' | '"' | '\'' => UnknownPrefix,
-            _ => InvalidIdent,
-        }
+        InvalidIdent
     }
 
     fn number(&mut self, first_digit: char) -> LiteralKind {
