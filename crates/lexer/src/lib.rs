@@ -1,36 +1,8 @@
-//! Low-level Rust lexer.
-//!
-//! The idea with `rustc_lexer` is to make a reusable library,
-//! by separating out pure lexing and rustc-specific concerns, like spans,
-//! error reporting, and interning.  So, rustc_lexer operates directly on `&str`,
-//! produces simple tokens which are a pair of type-tag and a bit of original text,
-//! and does not report errors, instead storing them as flags on the token.
-//!
-//! Tokens produced by this lexer are not yet ready for parsing the Rust syntax.
-//! For that see [`rustc_parse::lexer`], which converts this basic token stream
-//! into wide tokens used by actual parser.
-//!
-//! The purpose of this crate is to convert raw sources into a labeled sequence
-//! of well-known token types, so building an actual Rust token stream will
-//! be easier.
-//!
-//! The main entity of this crate is the [`TokenKind`] enum which represents common
-//! lexeme types.
-//!
-//! [`rustc_parse::lexer`]: ../rustc_parse/lexer/index.html
-// We want to be able to build this crate with a stable compiler, so no
-// `#![feature]` attributes should be added.
-
 mod cursor;
-pub mod unescape;
-
-#[cfg(test)]
-mod tests;
 
 use self::LiteralKind::*;
 use self::TokenKind::*;
-use crate::cursor::{Cursor, EOF_CHAR};
-use std::convert::TryFrom;
+use crate::cursor::Cursor;
 
 /// Parsed token.
 /// It doesn't contain information about data that has been parsed,
@@ -69,8 +41,6 @@ pub enum TokenKind {
     Ident,
     /// Like the above, but containing invalid unicode codepoints.
     InvalidIdent,
-    /// "r#ident"
-    RawIdent,
     /// An unknown prefix like `foo#`, `foo'`, `foo"`. Note that only the
     /// prefix (`foo`) is included in the token, not the separator (which is
     /// lexed as its own distinct token). In Rust 2021 and later, reserved
@@ -83,8 +53,6 @@ pub enum TokenKind {
         kind: LiteralKind,
         suffix_start: usize,
     },
-    /// "'a"
-    Lifetime { starts_with_number: bool },
 
     // One-char tokens:
     /// ";"
@@ -166,36 +134,6 @@ pub enum LiteralKind {
     Str { terminated: bool },
     /// "b"abc"", "b"abc"
     ByteStr { terminated: bool },
-    /// "r"abc"", "r#"abc"#", "r####"ab"###"c"####", "r#"a"
-    RawStr {
-        n_hashes: u16,
-        err: Option<RawStrError>,
-    },
-    /// "br"abc"", "br#"abc"#", "br####"ab"###"c"####", "br#"a"
-    RawByteStr {
-        n_hashes: u16,
-        err: Option<RawStrError>,
-    },
-}
-
-/// Error produced validating a raw string. Represents cases like:
-/// - `r##~"abcde"##`: `InvalidStarter`
-/// - `r###"abcde"##`: `NoTerminator { expected: 3, found: 2, possible_terminator_offset: Some(11)`
-/// - Too many `#`s (>65535): `TooManyDelimiters`
-// perf note: It doesn't matter that this makes `Token` 36 bytes bigger. See #77629
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum RawStrError {
-    /// Non `#` characters exist between `r` and `"` eg. `r#~"..`
-    InvalidStarter { bad_char: char },
-    /// The string was never terminated. `possible_terminator_offset` is the number of characters after `r` or `br` where they
-    /// may have intended to terminate it.
-    NoTerminator {
-        expected: usize,
-        found: usize,
-        possible_terminator_offset: Option<usize>,
-    },
-    /// More than 65535 `#`s exist.
-    TooManyDelimiters { found: usize },
 }
 
 /// Base of numeric literal encoding according to its prefix.
@@ -211,56 +149,16 @@ pub enum Base {
     Decimal,
 }
 
-/// `rustc` allows files to have a shebang, e.g. "#!/usr/bin/rustrun",
-/// but shebang isn't a part of rust syntax.
-pub fn strip_shebang(input: &str) -> Option<usize> {
-    // Shebang must start with `#!` literally, without any preceding whitespace.
-    // For simplicity we consider any line starting with `#!` a shebang,
-    // regardless of restrictions put on shebangs by specific platforms.
-    if let Some(input_tail) = input.strip_prefix("#!") {
-        // Ok, this is a shebang but if the next non-whitespace token is `[`,
-        // then it may be valid Rust code, so consider it Rust code.
-        let next_non_whitespace_token = tokenize(input_tail).map(|tok| tok.kind).find(|tok| {
-            !matches!(
-                tok,
-                TokenKind::Whitespace
-                    | TokenKind::LineComment { doc_style: None }
-                    | TokenKind::BlockComment {
-                        doc_style: None,
-                        ..
-                    }
-            )
-        });
-        if next_non_whitespace_token != Some(TokenKind::OpenBracket) {
-            // No other choice than to consider this a shebang.
-            return Some(2 + input_tail.lines().next().unwrap_or_default().len());
-        }
-    }
-    None
-}
-
 /// Parses the first token from the provided input string.
 pub fn first_token(input: &str) -> Token {
     debug_assert!(!input.is_empty());
     Cursor::new(input).advance_token()
 }
 
-/// Creates an iterator that produces tokens from the input string.
-pub fn tokenize(mut input: &str) -> impl Iterator<Item = Token> + '_ {
-    std::iter::from_fn(move || {
-        if input.is_empty() {
-            return None;
-        }
-        let token = first_token(input);
-        input = &input[token.len..];
-        Some(token)
-    })
-}
-
 /// True if `c` is considered a whitespace according to Rust language definition.
 /// See [Rust language reference](https://doc.rust-lang.org/reference/whitespace.html)
 /// for definitions of these classes.
-pub fn is_whitespace(c: char) -> bool {
+fn is_whitespace(c: char) -> bool {
     // This is Pattern_White_Space.
     //
     // Note that this set is stable (ie, it doesn't change with different
@@ -329,56 +227,6 @@ impl Cursor<'_> {
             // Whitespace sequence.
             c if is_whitespace(c) => self.whitespace(),
 
-            // Raw identifier, raw string literal or identifier.
-            'r' => match (self.first(), self.second()) {
-                ('#', c1) if is_id_start(c1) => self.raw_ident(),
-                ('#', _) | ('"', _) => {
-                    let (n_hashes, err) = self.raw_double_quoted_string(1);
-                    let suffix_start = self.len_consumed();
-                    if err.is_none() {
-                        self.eat_literal_suffix();
-                    }
-                    let kind = RawStr { n_hashes, err };
-                    Literal { kind, suffix_start }
-                }
-                _ => self.ident_or_unknown_prefix(),
-            },
-
-            // Byte literal, byte string literal, raw byte string literal or identifier.
-            'b' => match (self.first(), self.second()) {
-                ('\'', _) => {
-                    self.bump();
-                    let terminated = self.single_quoted_string();
-                    let suffix_start = self.len_consumed();
-                    if terminated {
-                        self.eat_literal_suffix();
-                    }
-                    let kind = Byte { terminated };
-                    Literal { kind, suffix_start }
-                }
-                ('"', _) => {
-                    self.bump();
-                    let terminated = self.double_quoted_string();
-                    let suffix_start = self.len_consumed();
-                    if terminated {
-                        self.eat_literal_suffix();
-                    }
-                    let kind = ByteStr { terminated };
-                    Literal { kind, suffix_start }
-                }
-                ('r', '"') | ('r', '#') => {
-                    self.bump();
-                    let (n_hashes, err) = self.raw_double_quoted_string(2);
-                    let suffix_start = self.len_consumed();
-                    if err.is_none() {
-                        self.eat_literal_suffix();
-                    }
-                    let kind = RawByteStr { n_hashes, err };
-                    Literal { kind, suffix_start }
-                }
-                _ => self.ident_or_unknown_prefix(),
-            },
-
             // Identifier (this should be checked after other variant that can
             // start as identifier).
             c if is_id_start(c) => self.ident_or_unknown_prefix(),
@@ -421,9 +269,6 @@ impl Cursor<'_> {
             '*' => Star,
             '^' => Caret,
             '%' => Percent,
-
-            // Lifetime or character literal.
-            '\'' => self.lifetime_or_char(),
 
             // String literal.
             '"' => {
@@ -504,15 +349,6 @@ impl Cursor<'_> {
         debug_assert!(is_whitespace(self.prev()));
         self.eat_while(is_whitespace);
         Whitespace
-    }
-
-    fn raw_ident(&mut self) -> TokenKind {
-        debug_assert!(self.prev() == 'r' && self.first() == '#' && is_id_start(self.second()));
-        // Eat "#" symbol.
-        self.bump();
-        // Eat the identifier part of RawIdent.
-        self.eat_identifier();
-        RawIdent
     }
 
     fn ident_or_unknown_prefix(&mut self) -> TokenKind {
@@ -631,96 +467,6 @@ impl Cursor<'_> {
         }
     }
 
-    fn lifetime_or_char(&mut self) -> TokenKind {
-        debug_assert!(self.prev() == '\'');
-
-        let can_be_a_lifetime = if self.second() == '\'' {
-            // It's surely not a lifetime.
-            false
-        } else {
-            // If the first symbol is valid for identifier, it can be a lifetime.
-            // Also check if it's a number for a better error reporting (so '0 will
-            // be reported as invalid lifetime and not as unterminated char literal).
-            is_id_start(self.first()) || self.first().is_digit(10)
-        };
-
-        if !can_be_a_lifetime {
-            let terminated = self.single_quoted_string();
-            let suffix_start = self.len_consumed();
-            if terminated {
-                self.eat_literal_suffix();
-            }
-            let kind = Char { terminated };
-            return Literal { kind, suffix_start };
-        }
-
-        // Either a lifetime or a character literal with
-        // length greater than 1.
-
-        let starts_with_number = self.first().is_digit(10);
-
-        // Skip the literal contents.
-        // First symbol can be a number (which isn't a valid identifier start),
-        // so skip it without any checks.
-        self.bump();
-        self.eat_while(is_id_continue);
-
-        // Check if after skipping literal contents we've met a closing
-        // single quote (which means that user attempted to create a
-        // string with single quotes).
-        if self.first() == '\'' {
-            self.bump();
-            let kind = Char { terminated: true };
-            Literal {
-                kind,
-                suffix_start: self.len_consumed(),
-            }
-        } else {
-            Lifetime { starts_with_number }
-        }
-    }
-
-    fn single_quoted_string(&mut self) -> bool {
-        debug_assert!(self.prev() == '\'');
-        // Check if it's a one-symbol literal.
-        if self.second() == '\'' && self.first() != '\\' {
-            self.bump();
-            self.bump();
-            return true;
-        }
-
-        // Literal has more than one symbol.
-
-        // Parse until either quotes are terminated or error is detected.
-        loop {
-            match self.first() {
-                // Quotes are terminated, finish parsing.
-                '\'' => {
-                    self.bump();
-                    return true;
-                }
-                // Probably beginning of the comment, which we don't want to include
-                // to the error report.
-                '/' => break,
-                // Newline without following '\'' means unclosed quote, stop parsing.
-                '\n' if self.second() != '\'' => break,
-                // End of file, stop parsing.
-                EOF_CHAR if self.is_eof() => break,
-                // Escaped slash is considered one character, so bump twice.
-                '\\' => {
-                    self.bump();
-                    self.bump();
-                }
-                // Skip the character.
-                _ => {
-                    self.bump();
-                }
-            }
-        }
-        // String was not terminated.
-        false
-    }
-
     /// Eats double-quoted string and returns true
     /// if string is terminated.
     fn double_quoted_string(&mut self) -> bool {
@@ -739,87 +485,6 @@ impl Cursor<'_> {
         }
         // End of file reached.
         false
-    }
-
-    /// Eats the double-quoted string and returns `n_hashes` and an error if encountered.
-    fn raw_double_quoted_string(&mut self, prefix_len: usize) -> (u16, Option<RawStrError>) {
-        // Wrap the actual function to handle the error with too many hashes.
-        // This way, it eats the whole raw string.
-        let (n_hashes, err) = self.raw_string_unvalidated(prefix_len);
-        // Only up to 65535 `#`s are allowed in raw strings
-        match u16::try_from(n_hashes) {
-            Ok(num) => (num, err),
-            // We lie about the number of hashes here :P
-            Err(_) => (0, Some(RawStrError::TooManyDelimiters { found: n_hashes })),
-        }
-    }
-
-    fn raw_string_unvalidated(&mut self, prefix_len: usize) -> (usize, Option<RawStrError>) {
-        debug_assert!(self.prev() == 'r');
-        let start_pos = self.len_consumed();
-        let mut possible_terminator_offset = None;
-        let mut max_hashes = 0;
-
-        // Count opening '#' symbols.
-        let mut eaten = 0;
-        while self.first() == '#' {
-            eaten += 1;
-            self.bump();
-        }
-        let n_start_hashes = eaten;
-
-        // Check that string is started.
-        match self.bump() {
-            Some('"') => (),
-            c => {
-                let c = c.unwrap_or(EOF_CHAR);
-                return (
-                    n_start_hashes,
-                    Some(RawStrError::InvalidStarter { bad_char: c }),
-                );
-            }
-        }
-
-        // Skip the string contents and on each '#' character met, check if this is
-        // a raw string termination.
-        loop {
-            self.eat_while(|c| c != '"');
-
-            if self.is_eof() {
-                return (
-                    n_start_hashes,
-                    Some(RawStrError::NoTerminator {
-                        expected: n_start_hashes,
-                        found: max_hashes,
-                        possible_terminator_offset,
-                    }),
-                );
-            }
-
-            // Eat closing double quote.
-            self.bump();
-
-            // Check that amount of closing '#' symbols
-            // is equal to the amount of opening ones.
-            // Note that this will not consume extra trailing `#` characters:
-            // `r###"abcde"####` is lexed as a `RawStr { n_hashes: 3 }`
-            // followed by a `#` token.
-            let mut n_end_hashes = 0;
-            while self.first() == '#' && n_end_hashes < n_start_hashes {
-                n_end_hashes += 1;
-                self.bump();
-            }
-
-            if n_end_hashes == n_start_hashes {
-                return (n_start_hashes, None);
-            } else if n_end_hashes > max_hashes {
-                // Keep track of possible terminators to give a hint about
-                // where there might be a missing terminator
-                possible_terminator_offset =
-                    Some(self.len_consumed() - start_pos - n_end_hashes + prefix_len);
-                max_hashes = n_end_hashes;
-            }
-        }
     }
 
     fn eat_decimal_digits(&mut self) -> bool {
