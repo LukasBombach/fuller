@@ -32,7 +32,11 @@ fn test_unterminated() {
     check_raw_str(
         r#"#"abc"#,
         1,
-        Some(RawStrError::NoTerminator { expected: 1, found: 0, possible_terminator_offset: None }),
+        Some(RawStrError::NoTerminator {
+            expected: 1,
+            found: 0,
+            possible_terminator_offset: None,
+        }),
     );
     check_raw_str(
         r###"##"abc"#"###,
@@ -47,13 +51,21 @@ fn test_unterminated() {
     check_raw_str(
         r###"##"abc#"###,
         2,
-        Some(RawStrError::NoTerminator { expected: 2, found: 0, possible_terminator_offset: None }),
+        Some(RawStrError::NoTerminator {
+            expected: 2,
+            found: 0,
+            possible_terminator_offset: None,
+        }),
     )
 }
 
 #[test]
 fn test_invalid_start() {
-    check_raw_str(r##"#~"abc"#"##, 1, Some(RawStrError::InvalidStarter { bad_char: '~' }));
+    check_raw_str(
+        r##"#~"abc"#"##,
+        1,
+        Some(RawStrError::InvalidStarter { bad_char: '~' }),
+    );
 }
 
 #[test]
@@ -62,7 +74,11 @@ fn test_unterminated_no_pound() {
     check_raw_str(
         r#"""#,
         0,
-        Some(RawStrError::NoTerminator { expected: 0, found: 0, possible_terminator_offset: None }),
+        Some(RawStrError::NoTerminator {
+            expected: 0,
+            found: 0,
+            possible_terminator_offset: None,
+        }),
     );
 }
 
@@ -124,7 +140,9 @@ fn test_shebang_followed_by_attrib() {
 }
 
 fn check_lexing(src: &str, expect: Expect) {
-    let actual: String = tokenize(src).map(|token| format!("{:?}\n", token)).collect();
+    let actual: String = tokenize(src)
+        .map(|token| format!("{:?}\n", token))
+        .collect();
     expect.assert_eq(&actual)
 }
 

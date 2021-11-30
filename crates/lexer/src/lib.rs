@@ -58,7 +58,10 @@ pub enum TokenKind {
     ///
     /// Block comments can be recursive, so the sequence like `/* /* */`
     /// will not be considered terminated and will result in a parsing error.
-    BlockComment { doc_style: Option<DocStyle>, terminated: bool },
+    BlockComment {
+        doc_style: Option<DocStyle>,
+        terminated: bool,
+    },
     /// Any whitespace characters sequence.
     Whitespace,
     /// "ident" or "continue"
@@ -76,7 +79,10 @@ pub enum TokenKind {
     /// tokens.
     UnknownPrefix,
     /// "12_u8", "1.0e-40", "b"123"". See `LiteralKind` for more details.
-    Literal { kind: LiteralKind, suffix_start: usize },
+    Literal {
+        kind: LiteralKind,
+        suffix_start: usize,
+    },
     /// "'a"
     Lifetime { starts_with_number: bool },
 
@@ -161,9 +167,15 @@ pub enum LiteralKind {
     /// "b"abc"", "b"abc"
     ByteStr { terminated: bool },
     /// "r"abc"", "r#"abc"#", "r####"ab"###"c"####", "r#"a"
-    RawStr { n_hashes: u16, err: Option<RawStrError> },
+    RawStr {
+        n_hashes: u16,
+        err: Option<RawStrError>,
+    },
     /// "br"abc"", "br#"abc"#", "br####"ab"###"c"####", "br#"a"
-    RawByteStr { n_hashes: u16, err: Option<RawStrError> },
+    RawByteStr {
+        n_hashes: u16,
+        err: Option<RawStrError>,
+    },
 }
 
 /// Error produced validating a raw string. Represents cases like:
@@ -177,7 +189,11 @@ pub enum RawStrError {
     InvalidStarter { bad_char: char },
     /// The string was never terminated. `possible_terminator_offset` is the number of characters after `r` or `br` where they
     /// may have intended to terminate it.
-    NoTerminator { expected: usize, found: usize, possible_terminator_offset: Option<usize> },
+    NoTerminator {
+        expected: usize,
+        found: usize,
+        possible_terminator_offset: Option<usize>,
+    },
     /// More than 65535 `#`s exist.
     TooManyDelimiters { found: usize },
 }
@@ -209,7 +225,10 @@ pub fn strip_shebang(input: &str) -> Option<usize> {
                 tok,
                 TokenKind::Whitespace
                     | TokenKind::LineComment { doc_style: None }
-                    | TokenKind::BlockComment { doc_style: None, .. }
+                    | TokenKind::BlockComment {
+                        doc_style: None,
+                        ..
+                    }
             )
         });
         if next_non_whitespace_token != Some(TokenKind::OpenBracket) {
@@ -369,7 +388,10 @@ impl Cursor<'_> {
                 let literal_kind = self.number(c);
                 let suffix_start = self.len_consumed();
                 self.eat_literal_suffix();
-                TokenKind::Literal { kind: literal_kind, suffix_start }
+                TokenKind::Literal {
+                    kind: literal_kind,
+                    suffix_start,
+                }
             }
 
             // One-symbol tokens.
@@ -472,7 +494,10 @@ impl Cursor<'_> {
             }
         }
 
-        BlockComment { doc_style, terminated: depth == 0 }
+        BlockComment {
+            doc_style,
+            terminated: depth == 0,
+        }
     }
 
     fn whitespace(&mut self) -> TokenKind {
@@ -547,12 +572,20 @@ impl Cursor<'_> {
                     true
                 }
                 // Just a 0.
-                _ => return Int { base, empty_int: false },
+                _ => {
+                    return Int {
+                        base,
+                        empty_int: false,
+                    }
+                }
             };
             // Base prefix was provided, but there were no digits
             // after it, e.g. "0x".
             if !has_digits {
-                return Int { base, empty_int: true };
+                return Int {
+                    base,
+                    empty_int: true,
+                };
             }
         } else {
             // No base prefix, parse number in the usual way.
@@ -578,14 +611,23 @@ impl Cursor<'_> {
                         _ => (),
                     }
                 }
-                Float { base, empty_exponent }
+                Float {
+                    base,
+                    empty_exponent,
+                }
             }
             'e' | 'E' => {
                 self.bump();
                 let empty_exponent = !self.eat_float_exponent();
-                Float { base, empty_exponent }
+                Float {
+                    base,
+                    empty_exponent,
+                }
             }
-            _ => Int { base, empty_int: false },
+            _ => Int {
+                base,
+                empty_int: false,
+            },
         }
     }
 
@@ -629,7 +671,10 @@ impl Cursor<'_> {
         if self.first() == '\'' {
             self.bump();
             let kind = Char { terminated: true };
-            Literal { kind, suffix_start: self.len_consumed() }
+            Literal {
+                kind,
+                suffix_start: self.len_consumed(),
+            }
         } else {
             Lifetime { starts_with_number }
         }
@@ -728,7 +773,10 @@ impl Cursor<'_> {
             Some('"') => (),
             c => {
                 let c = c.unwrap_or(EOF_CHAR);
-                return (n_start_hashes, Some(RawStrError::InvalidStarter { bad_char: c }));
+                return (
+                    n_start_hashes,
+                    Some(RawStrError::InvalidStarter { bad_char: c }),
+                );
             }
         }
 

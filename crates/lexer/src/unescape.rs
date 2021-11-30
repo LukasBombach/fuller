@@ -223,7 +223,9 @@ fn scan_escape(first_char: char, chars: &mut Chars<'_>, mode: Mode) -> Result<ch
             let mut value: u32 = match chars.next().ok_or(EscapeError::UnclosedUnicodeEscape)? {
                 '_' => return Err(EscapeError::LeadingUnderscoreUnicodeEscape),
                 '}' => return Err(EscapeError::EmptyUnicodeEscape),
-                c => c.to_digit(16).ok_or(EscapeError::InvalidCharInUnicodeEscape)?,
+                c => c
+                    .to_digit(16)
+                    .ok_or(EscapeError::InvalidCharInUnicodeEscape)?,
             };
 
             // First character is valid, now parse the rest of the number
@@ -252,8 +254,9 @@ fn scan_escape(first_char: char, chars: &mut Chars<'_>, mode: Mode) -> Result<ch
                         })?;
                     }
                     Some(c) => {
-                        let digit =
-                            c.to_digit(16).ok_or(EscapeError::InvalidCharInUnicodeEscape)?;
+                        let digit = c
+                            .to_digit(16)
+                            .ok_or(EscapeError::InvalidCharInUnicodeEscape)?;
                         n_digits += 1;
                         if n_digits > 6 {
                             // Stop updating value since we're sure that it's is incorrect already.

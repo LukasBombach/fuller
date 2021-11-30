@@ -102,7 +102,9 @@ fn test_unescape_char_good() {
 fn test_unescape_str_warn() {
     fn check(literal: &str, expected: &[(Range<usize>, Result<char, EscapeError>)]) {
         let mut unescaped = Vec::with_capacity(literal.len());
-        unescape_literal(literal, Mode::Str, &mut |range, res| unescaped.push((range, res)));
+        unescape_literal(literal, Mode::Str, &mut |range, res| {
+            unescaped.push((range, res))
+        });
         assert_eq!(unescaped, expected);
     }
 
@@ -119,7 +121,13 @@ fn test_unescape_str_warn() {
             (6..7, Ok('x')),
         ],
     );
-    check("\\\n  \n  x", &[(0..7, Err(EscapeError::MultipleSkippedLinesWarning)), (7..8, Ok('x'))]);
+    check(
+        "\\\n  \n  x",
+        &[
+            (0..7, Err(EscapeError::MultipleSkippedLinesWarning)),
+            (7..8, Ok('x')),
+        ],
+    );
 }
 
 #[test]
@@ -270,12 +278,23 @@ fn test_unescape_byte_str_good() {
 fn test_unescape_raw_str() {
     fn check(literal: &str, expected: &[(Range<usize>, Result<char, EscapeError>)]) {
         let mut unescaped = Vec::with_capacity(literal.len());
-        unescape_literal(literal, Mode::RawStr, &mut |range, res| unescaped.push((range, res)));
+        unescape_literal(literal, Mode::RawStr, &mut |range, res| {
+            unescaped.push((range, res))
+        });
         assert_eq!(unescaped, expected);
     }
 
-    check("\r", &[(0..1, Err(EscapeError::BareCarriageReturnInRawString))]);
-    check("\rx", &[(0..1, Err(EscapeError::BareCarriageReturnInRawString)), (1..2, Ok('x'))]);
+    check(
+        "\r",
+        &[(0..1, Err(EscapeError::BareCarriageReturnInRawString))],
+    );
+    check(
+        "\rx",
+        &[
+            (0..1, Err(EscapeError::BareCarriageReturnInRawString)),
+            (1..2, Ok('x')),
+        ],
+    );
 }
 
 #[test]
@@ -288,10 +307,16 @@ fn test_unescape_raw_byte_str() {
         assert_eq!(unescaped, expected);
     }
 
-    check("\r", &[(0..1, Err(EscapeError::BareCarriageReturnInRawString))]);
+    check(
+        "\r",
+        &[(0..1, Err(EscapeError::BareCarriageReturnInRawString))],
+    );
     check("🦀", &[(0..4, Err(EscapeError::NonAsciiCharInByteString))]);
     check(
         "🦀a",
-        &[(0..4, Err(EscapeError::NonAsciiCharInByteString)), (4..5, Ok(byte_from_char('a')))],
+        &[
+            (0..4, Err(EscapeError::NonAsciiCharInByteString)),
+            (4..5, Ok(byte_from_char('a'))),
+        ],
     );
 }
