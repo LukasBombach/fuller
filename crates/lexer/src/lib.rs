@@ -20,87 +20,44 @@ impl Token {
 }
 
 /// Enum representing common lexeme types.
-// perf note: Changing all `usize` to `u32` doesn't change performance. See #77629
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TokenKind {
     // Multi-char tokens:
-    /// "// comment"
     LineComment,
-    /// `/* block comment */`
-    ///
-    /// Block comments can be recursive, so the sequence like `/* /* */`
-    /// will not be considered terminated and will result in a parsing error.
     BlockComment { terminated: bool },
-    /// Any whitespace characters sequence.
     Whitespace,
-    /// "ident" or "continue"
-    /// At this step keywords are also considered identifiers.
     Ident,
-    /// Like the above, but containing invalid unicode codepoints.
     InvalidIdent,
-    /// "12_u8", "1.0e-40", "b"123"". See `LiteralKind` for more details.
-    Literal {
-        kind: LiteralKind,
-        suffix_start: usize,
-    },
-
+    Literal { kind: LiteralKind },
     // One-char tokens:
-    /// ";"
     Semi,
-    /// ","
     Comma,
-    /// "."
     Dot,
-    /// "("
     OpenParen,
-    /// ")"
     CloseParen,
-    /// "{"
     OpenBrace,
-    /// "}"
     CloseBrace,
-    /// "["
     OpenBracket,
-    /// "]"
     CloseBracket,
-    /// "@"
     At,
-    /// "#"
     Pound,
-    /// "~"
     Tilde,
-    /// "?"
     Question,
-    /// ":"
     Colon,
-    /// "$"
     Dollar,
-    /// "="
     Eq,
-    /// "!"
     Bang,
-    /// "<"
     Lt,
-    /// ">"
     Gt,
-    /// "-"
     Minus,
-    /// "&"
     And,
-    /// "|"
     Or,
-    /// "+"
     Plus,
-    /// "*"
     Star,
-    /// "/"
     Slash,
-    /// "^"
     Caret,
-    /// "%"
     Percent,
-
-    /// Unknown token, not expected by the lexer, e.g. "№"
+    // Unknown token, not expected by the lexer, e.g. "№"
     Unknown,
 }
 
@@ -211,19 +168,14 @@ impl Cursor<'_> {
             // Whitespace sequence.
             c if is_whitespace(c) => self.whitespace(),
 
-            // Identifier (this should be checked after other variant that can
-            // start as identifier).
+            // Identifier
             c if is_id_start(c) => self.ident(),
 
             // Numeric literal.
             c @ '0'..='9' => {
                 let literal_kind = self.number(c);
-                let suffix_start = self.len_consumed();
                 self.eat_literal_suffix();
-                TokenKind::Literal {
-                    kind: literal_kind,
-                    suffix_start,
-                }
+                TokenKind::Literal { kind: literal_kind }
             }
 
             // One-symbol tokens.
@@ -257,12 +209,11 @@ impl Cursor<'_> {
             // String literal.
             '"' => {
                 let terminated = self.double_quoted_string();
-                let suffix_start = self.len_consumed();
                 if terminated {
                     self.eat_literal_suffix();
                 }
                 let kind = Str { terminated };
-                Literal { kind, suffix_start }
+                Literal { kind }
             }
             // Identifier starting with an emoji. Only lexed for graceful error recovery.
             c if !c.is_ascii() && unic_emoji_char::is_emoji(c) => self.fake_ident(),
@@ -492,7 +443,6 @@ impl Cursor<'_> {
             return;
         }
         self.bump();
-
         self.eat_while(is_id_continue);
     }
 
