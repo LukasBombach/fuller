@@ -1,14 +1,15 @@
-use lexer::first_token;
+use lexer::segment::first_segment;
+use lexer::segment::SegmentKind;
 
 fn main() {
     let mut src = "const x = \"12\";\nconst y = \"12345678\";";
     let mut pos = Position { line: 1, col: 1 };
 
     while !src.is_empty() {
-        let token = first_token(src);
+        let token = first_segment(src);
 
         pos = match token.kind {
-            lexer::TokenKind::Eq => {
+            SegmentKind::Eq => {
                 let kind = TokenKind::Eq;
                 let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
@@ -19,7 +20,7 @@ fn main() {
                 );
                 end
             }
-            lexer::TokenKind::Semi => {
+            SegmentKind::Semi => {
                 let kind = TokenKind::Semi;
                 let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
@@ -30,7 +31,7 @@ fn main() {
                 );
                 end
             }
-            lexer::TokenKind::Ident => {
+            SegmentKind::Ident => {
                 let kind = keyword_or_identifier(&src[..token.len]);
                 let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
@@ -41,7 +42,7 @@ fn main() {
                 );
                 end
             }
-            lexer::TokenKind::Literal { .. } => {
+            SegmentKind::Literal { .. } => {
                 let kind = TokenKind::Literal(&src[..token.len]);
                 let (start, end) = span(pos, 0, token.len);
                 let token = Token { kind, start, end };
@@ -52,7 +53,7 @@ fn main() {
                 );
                 end
             }
-            lexer::TokenKind::Whitespace => match &src[..token.len] {
+            SegmentKind::Whitespace => match &src[..token.len] {
                 "\n" => pos.nl(),
                 "\r" => pos,
                 _ => pos.ff(1),
