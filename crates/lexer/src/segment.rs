@@ -6,14 +6,14 @@ use crate::cursor::Cursor;
 /// It doesn't contain information about data that has been parsed,
 /// only the type of the token and its size.
 #[derive(Debug)]
-pub struct Token {
+pub struct Segment {
     pub kind: SegmentKind,
     pub len: usize,
 }
 
-impl Token {
-    fn new(kind: SegmentKind, len: usize) -> Token {
-        Token { kind, len }
+impl Segment {
+    fn new(kind: SegmentKind, len: usize) -> Segment {
+        Segment { kind, len }
     }
 }
 
@@ -89,7 +89,7 @@ pub enum Base {
 }
 
 /// Parses the first token from the provided input string.
-pub fn first_segment(input: &str) -> Token {
+pub fn first_segment(input: &str) -> Segment {
     debug_assert!(!input.is_empty());
     Cursor::new(input).advance_segment()
 }
@@ -153,7 +153,7 @@ pub fn is_ident(string: &str) -> bool {
 
 impl Cursor<'_> {
     /// Parses a token from the input string.
-    fn advance_segment(&mut self) -> Token {
+    fn advance_segment(&mut self) -> Segment {
         let first_char = self.bump().unwrap();
         let token_kind = match first_char {
             // Slash, comment or block comment.
@@ -217,7 +217,7 @@ impl Cursor<'_> {
             c if !c.is_ascii() && unic_emoji_char::is_emoji(c) => self.fake_ident(),
             _ => Unknown,
         };
-        Token::new(token_kind, self.len_consumed())
+        Segment::new(token_kind, self.len_consumed())
     }
 
     fn line_comment(&mut self) -> SegmentKind {
