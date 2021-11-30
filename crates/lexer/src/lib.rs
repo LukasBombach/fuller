@@ -25,15 +25,12 @@ impl Token {
 pub enum TokenKind {
     // Multi-char tokens:
     /// "// comment"
-    LineComment { doc_style: Option<DocStyle> },
+    LineComment,
     /// `/* block comment */`
     ///
     /// Block comments can be recursive, so the sequence like `/* /* */`
     /// will not be considered terminated and will result in a parsing error.
-    BlockComment {
-        doc_style: Option<DocStyle>,
-        terminated: bool,
-    },
+    BlockComment { terminated: bool },
     /// Any whitespace characters sequence.
     Whitespace,
     /// "ident" or "continue"
@@ -105,12 +102,6 @@ pub enum TokenKind {
 
     /// Unknown token, not expected by the lexer, e.g. "№"
     Unknown,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum DocStyle {
-    Outer,
-    Inner,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -283,31 +274,13 @@ impl Cursor<'_> {
     fn line_comment(&mut self) -> TokenKind {
         debug_assert!(self.prev() == '/' && self.first() == '/');
         self.bump();
-
-        let doc_style = match self.first() {
-            // `//!` is an inner line doc comment.
-            '!' => Some(DocStyle::Inner),
-            // `////` (more than 3 slashes) is not considered a doc comment.
-            '/' if self.second() != '/' => Some(DocStyle::Outer),
-            _ => None,
-        };
-
         self.eat_while(|c| c != '\n');
-        LineComment { doc_style }
+        LineComment
     }
 
     fn block_comment(&mut self) -> TokenKind {
         debug_assert!(self.prev() == '/' && self.first() == '*');
         self.bump();
-
-        let doc_style = match self.first() {
-            // `/*!` is an inner block doc comment.
-            '!' => Some(DocStyle::Inner),
-            // `/***` (more than 2 stars) is not considered a doc comment.
-            // `/**/` is not considered a doc comment.
-            '*' if !matches!(self.second(), '*' | '/') => Some(DocStyle::Outer),
-            _ => None,
-        };
 
         let mut depth = 1usize;
         while let Some(c) = self.bump() {
@@ -331,7 +304,6 @@ impl Cursor<'_> {
         }
 
         BlockComment {
-            doc_style,
             terminated: depth == 0,
         }
     }
