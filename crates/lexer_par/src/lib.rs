@@ -1,6 +1,6 @@
-use std::str::Chars;
+mod cursor;
 
-use self::TokenKind::*;
+use crate::cursor::Cursor;
 
 #[derive(Debug)]
 struct Token {
@@ -104,42 +104,6 @@ enum TokenKind {
     Ps,
 }
 
-const EOF_CHAR: char = '\0';
-
-/// Peekable iterator over a char sequence.
-struct Cursor<'a> {
-    len: usize,
-    chars: Chars<'a>,
-}
-
-impl<'a> Cursor<'a> {
-    fn new(input: &'a str) -> Cursor<'a> {
-        Cursor {
-            len: input.len(),
-            chars: input.chars(),
-        }
-    }
-
-    fn peek(&self) -> char {
-        self.chars.clone().next().unwrap_or(EOF_CHAR)
-    }
-
-    fn first(&mut self) -> Option<char> {
-        let c = self.chars.next()?;
-        Some(c)
-    }
-
-    fn is_eof(&self) -> bool {
-        self.chars.as_str().is_empty()
-    }
-
-    fn eat_while(&mut self, mut predicate: impl FnMut(char) -> bool) {
-        while predicate(self.peek()) && !self.is_eof() {
-            self.first();
-        }
-    }
-}
-
 impl Cursor<'_> {
     fn first_token(&mut self) -> Token {
         let first_char = self.first().unwrap();
@@ -166,12 +130,13 @@ fn first(input: &str) -> Token {
 #[cfg(test)]
 mod tests {
 
+    use super::TokenKind::*;
     use super::*;
 
     #[test]
     fn first_goalpost() {
         let input = "const val = true; if (val) { alert(val); }";
 
-        assert_eq!(first(input), Token { kind: IF, len: 2 });
+        assert_eq!(first(input), Token { kind: If, len: 2 });
     }
 }
