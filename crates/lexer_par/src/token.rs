@@ -107,4 +107,7 @@ pub(crate) enum TokenKind {
 
   // Eof
   Eof,
+
+  // Catchall
+  Unknown,
 }

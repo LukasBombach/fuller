@@ -19,9 +19,16 @@ impl<'a> Lexer<'a> {
     let start_pos = self.cursor.current_pos();
     let next_char = self.cursor.next_char();
     let token_kind = match next_char {
+      'a'..='z' => self.ident(),
+      'A'..='Z' => self.ident(),
       EOF_CHAR => Eof,
+      _ => Unknown,
     };
     let end_pos = self.cursor.current_pos();
     Token::new(token_kind, end_pos - start_pos)
   }
+}
+
+impl<'a> Lexer<'a> {
+  fn ident(&mut self) -> TokenKind {}
 }

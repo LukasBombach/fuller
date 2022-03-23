@@ -21,13 +21,21 @@ impl<'a> Cursor<'a> {
     self.chars.next().unwrap_or(EOF_CHAR)
   }
 
+  pub(crate) fn next_while(&mut self, mut predicate: impl FnMut(char) -> bool) {
+    while predicate(self.peek()) {
+      self.chars.next();
+    }
+  }
+
+  pub(crate) fn peek(&self) -> char {
+    self.chars.clone().next().unwrap_or(EOF_CHAR)
+  }
+
   pub(crate) fn current_pos(&self) -> usize {
     self.pos
   }
 
-  /* pub(crate) fn peek(&self) -> char {
-    self.chars.clone().next().unwrap_or(EOF_CHAR)
-  }
+  /*
 
   pub(crate) fn next(&mut self) -> Option<char> {
     let c = self.chars.next()?;
