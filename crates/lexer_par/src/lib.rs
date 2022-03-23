@@ -1,8 +1,9 @@
 mod cursor;
 mod token;
+mod lexer;
 
-use crate::cursor::Cursor;
-use crate::token::*;
+pub(crate) use crate::cursor::Cursor;
+pub(crate) use crate::token::*;
 
 impl Cursor<'_> {
     fn first_token(&mut self) -> Token {

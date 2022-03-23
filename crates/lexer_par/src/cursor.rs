@@ -2,7 +2,6 @@ use std::str::Chars;
 
 pub(crate) const EOF_CHAR: char = '\0';
 
-/// Peekable iterator over a char sequence.
 pub(crate) struct Cursor<'a> {
   chars: Chars<'a>,
   len: usize,
