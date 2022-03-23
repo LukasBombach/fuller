@@ -1,108 +1,8 @@
 mod cursor;
+mod token;
 
 use crate::cursor::Cursor;
-
-#[derive(Debug)]
-struct Token {
-    pub kind: TokenKind,
-    pub len: usize,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-enum TokenKind {
-    // Keywords
-    Break,
-    Case,
-    Catch,
-    Class,
-    Const,
-    Continue,
-    Debugger,
-    Default,
-    Delete,
-    Do,
-    Else,
-    Export,
-    Extends,
-    Finally,
-    For,
-    Function,
-    If,
-    Import,
-    In,
-    Instanceof,
-    New,
-    Return,
-    Super,
-    Switch,
-    This,
-    Throw,
-    Try,
-    Typeof,
-    Var,
-    Void,
-    While,
-    With,
-    Yield,
-
-    // Future Keywords
-    Enum,
-
-    // Literals
-    Null,
-    True,
-    False,
-    Decimal,
-    Exponential,
-    Binary,
-    Octal,
-    Hexadecimal,
-    Bigint,
-    String,
-    Template,
-
-    // One-char tokens
-    Semi,
-    Comma,
-    Dot,
-    OpenParen,
-    CloseParen,
-    OpenBrace,
-    CloseBrace,
-    OpenBracket,
-    CloseBracket,
-    Colon,
-    Eq,
-    Lt,
-    Gt,
-    Minus,
-    And,
-    Or,
-    Plus,
-    Star,
-    Slash,
-    Caret,
-    Percent,
-
-    // Control characters
-    Zwnj,
-    Zwj,
-    Bom,
-
-    // Whitespace
-    Ht,
-    Vt,
-    Ff,
-    Sp,
-    Nbsp,
-    Usp,
-
-    // Line Terminators
-    Lf,
-    Cr,
-    Ls,
-    Ps,
-}
+use crate::token::*;
 
 impl Cursor<'_> {
     fn first_token(&mut self) -> Token {
@@ -113,8 +13,22 @@ impl Cursor<'_> {
         };
     }
 
-    fn keyword_or_ident(&mut self) -> TokenKind {
+    fn keyword_or_ident(&mut self) -> Token {
         self.eat_while(is_ascii_letter);
+        let str = self.slice()
+
+        Token::new()
+    }
+
+    fn is_keyword(str: &str) -> bool {
+
+    }
+
+}
+
+impl<'a> Cursor<'a> {
+    fn slice(&mut self) -> &'a str {
+
     }
 }
 
