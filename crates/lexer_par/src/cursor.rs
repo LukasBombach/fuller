@@ -17,7 +17,15 @@ impl<'a> Cursor<'a> {
     }
   }
 
-  pub(crate) fn peek(&self) -> char {
+  pub(crate) fn next_char(&mut self) -> char {
+    self.chars.next().unwrap_or(EOF_CHAR)
+  }
+
+  pub(crate) fn current_pos(&self) -> usize {
+    self.pos
+  }
+
+  /* pub(crate) fn peek(&self) -> char {
     self.chars.clone().next().unwrap_or(EOF_CHAR)
   }
 
@@ -40,5 +48,5 @@ impl<'a> Cursor<'a> {
 
   pub(crate) fn len_consumed(&self) -> usize {
     self.len - self.pos - self.chars.as_str().len()
-  }
+  } */
 }

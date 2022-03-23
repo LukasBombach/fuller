@@ -5,7 +5,7 @@ pub(crate) struct Token {
 }
 
 impl Token {
-  fn new(kind: TokenKind, len: usize) -> Token {
+  pub(crate) fn new(kind: TokenKind, len: usize) -> Token {
     Token { kind, len }
   }
 }
@@ -104,4 +104,7 @@ pub(crate) enum TokenKind {
   Cr,
   Ls,
   Ps,
+
+  // Eof
+  Eof,
 }
