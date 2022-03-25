@@ -3,5 +3,6 @@ resolver = "2"
 
 members = [
   "crates/lexer",
+  "crates/lexer_par",
   "crates/parser",
 ]
