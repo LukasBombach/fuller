@@ -1,5 +1,5 @@
 mod cursor;
-mod lexer;
+mod lexer_min;
 mod position;
 mod token;
 
