@@ -1,8 +1,10 @@
 mod cursor;
 mod lexer;
+mod position;
 mod token;
 
 pub(crate) use crate::cursor::Cursor;
+pub(crate) use crate::position::*;
 pub(crate) use crate::token::*;
 
 /* impl Cursor<'_> {

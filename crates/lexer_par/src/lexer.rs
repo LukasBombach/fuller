@@ -16,16 +16,91 @@ impl<'a> Lexer<'a> {
 
 impl<'a> Lexer<'a> {
   fn next_token(&mut self) -> Token {
-    let start_pos = self.cursor.current_pos();
+    let start = self.cursor.pos.clone();
+    loop {
+      let next_char = self.cursor.next_char();
+      let kind = match next_char {
+        ' ' => {
+          self.cursor.advance();
+          continue;
+        }
+        '\t' => {
+          self.cursor.advance();
+          continue;
+        }
+        '\r' => {
+          self.cursor.advance();
+          continue;
+        }
+        '\n' => {
+          self.cursor.newline();
+          continue;
+        }
+        ';' => Semi,
+        ',' => Comma,
+        '.' => Dot,
+        '(' => OpenParen,
+        ')' => CloseParen,
+        '{' => OpenBrace,
+        '}' => CloseBrace,
+        '[' => OpenBracket,
+        ']' => CloseBracket,
+        ':' => Colon,
+        '=' => Eq,
+        '<' => Lt,
+        '>' => Gt,
+        '-' => Minus,
+        '&' => And,
+        '|' => Or,
+        '+' => Plus,
+        '*' => Star,
+        '/' => Slash,
+        '%' => Percent,
+        '?' => Conditional,
+        '~' => BitNon,
+        'a'..='z' => self.ident(),
+        'A'..='Z' => self.ident(),
+        EOF_CHAR => Eof,
+        _ => Unknown,
+      };
+    }
+
+    /* let start = self.cursor.pos.clone();
     let next_char = self.cursor.next_char();
-    let token_kind = match next_char {
+    let kind = match next_char {
+      ' ' => Whitespace,
+      '\t' => Whitespace,
+      '\r' => Whitespace,
+      '\n' => Newline,
+      ';' => Semi,
+      ',' => Comma,
+      '.' => Dot,
+      '(' => OpenParen,
+      ')' => CloseParen,
+      '{' => OpenBrace,
+      '}' => CloseBrace,
+      '[' => OpenBracket,
+      ']' => CloseBracket,
+      ':' => Colon,
+      '=' => Eq,
+      '<' => Lt,
+      '>' => Gt,
+      '-' => Minus,
+      '&' => And,
+      '|' => Or,
+      '+' => Plus,
+      '*' => Star,
+      '/' => Slash,
+      '%' => Percent,
+      '?' => Conditional,
+      '~' => BitNon,
       'a'..='z' => self.ident(),
       'A'..='Z' => self.ident(),
       EOF_CHAR => Eof,
       _ => Unknown,
     };
-    let end_pos = self.cursor.current_pos();
-    Token::new(token_kind, end_pos - start_pos)
+    let end = self.cursor.pos.clone();
+    Token::new(kind, start, end) */
   }
 }
 

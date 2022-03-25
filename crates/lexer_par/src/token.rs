@@ -1,12 +1,15 @@
+use crate::position::Position;
+
 #[derive(Debug)]
 pub(crate) struct Token {
   pub kind: TokenKind,
-  pub len: usize,
+  pub start: Position,
+  pub end: Position,
 }
 
 impl Token {
-  pub(crate) fn new(kind: TokenKind, len: usize) -> Token {
-    Token { kind, len }
+  pub(crate) fn new(kind: TokenKind, start: Position, end: Position) -> Token {
+    Token { kind, start, end }
   }
 }
 
@@ -83,31 +86,32 @@ pub(crate) enum TokenKind {
   Plus,
   Star,
   Slash,
-  Caret,
   Percent,
+  Conditional,
+  BitNon,
 
-  // Control characters
-  Zwnj,
-  Zwj,
-  Bom,
-
-  // Whitespace
-  Ht,
-  Vt,
-  Ff,
-  Sp,
-  Nbsp,
-  Usp,
-
-  // Line Terminators
-  Lf,
-  Cr,
-  Ls,
-  Ps,
-
-  // Eof
+  // Special Purpose
+  Whitespace,
+  Newline,
   Eof,
-
-  // Catchall
   Unknown,
 }
+
+// // Control characters
+// Zwnj,
+// Zwj,
+// Bom,
+//
+// // Whitespace
+// Ht,
+// Vt,
+// Ff,
+// Sp,
+// Nbsp,
+// Usp,
+//
+// // Line Terminators
+// Lf,
+// Cr,
+// Ls,
+// Ps,

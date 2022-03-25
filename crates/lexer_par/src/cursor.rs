@@ -1,3 +1,4 @@
+use crate::position::Position;
 use std::str::Chars;
 
 pub(crate) const EOF_CHAR: char = '\0';
@@ -5,7 +6,18 @@ pub(crate) const EOF_CHAR: char = '\0';
 pub(crate) struct Cursor<'a> {
   chars: Chars<'a>,
   len: usize,
-  pos: usize,
+  pub(crate) pos: Position,
+}
+
+impl Cursor<'_> {
+  pub(crate) fn newline(&mut self) {
+    self.pos.line += 1;
+    self.pos.col = 0;
+  }
+
+  pub(crate) fn advance(&mut self) {
+    self.pos.col += 1;
+  }
 }
 
 impl<'a> Cursor<'a> {
@@ -13,7 +25,7 @@ impl<'a> Cursor<'a> {
     Cursor {
       chars: input.chars(),
       len: input.len(),
-      pos: 0,
+      pos: Position::new(),
     }
   }
 
@@ -29,10 +41,6 @@ impl<'a> Cursor<'a> {
 
   pub(crate) fn peek(&self) -> char {
     self.chars.clone().next().unwrap_or(EOF_CHAR)
-  }
-
-  pub(crate) fn current_pos(&self) -> usize {
-    self.pos
   }
 
   /*
@@ -58,3 +66,10 @@ impl<'a> Cursor<'a> {
     self.len - self.pos - self.chars.as_str().len()
   } */
 }
+
+/* impl<'a> Cursor<'a> {
+  pub(crate) fn next_non_whitespace(&mut self) -> char {
+    self.next_while(|c| c.is_whitespace());
+    self.next_char()
+  }
+} */
