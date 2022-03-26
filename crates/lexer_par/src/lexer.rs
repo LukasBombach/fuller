@@ -3,12 +3,12 @@ use crate::cursor::EOF_CHAR;
 use crate::token::TokenKind::*;
 use crate::token::*;
 
-pub(crate) struct Lexer<'a> {
+pub struct Lexer<'a> {
   cursor: Cursor<'a>,
 }
 
 impl<'a> Lexer<'a> {
-  pub(crate) fn new(input: &'a str) -> Self {
+  pub fn new(input: &'a str) -> Self {
     let cursor = Cursor::new(input);
     Lexer { cursor }
   }

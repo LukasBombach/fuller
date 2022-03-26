@@ -1,20 +1,20 @@
 use crate::position::Position;
 
-#[derive(Debug)]
-pub(crate) struct Token {
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Token {
   pub kind: TokenKind,
   pub start: Position,
   pub end: Position,
 }
 
 impl Token {
-  pub(crate) fn new(kind: TokenKind, start: Position, end: Position) -> Token {
+  pub fn new(kind: TokenKind, start: Position, end: Position) -> Token {
     Token { kind, start, end }
   }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) enum TokenKind {
+pub enum TokenKind {
   // Keywords
   Break,
   Case,
@@ -89,6 +89,9 @@ pub(crate) enum TokenKind {
   Percent,
   Conditional,
   BitNon,
+
+  // Identifiers
+  Ident,
 
   // Special Purpose
   Whitespace,

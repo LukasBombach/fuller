@@ -1,59 +1,65 @@
 mod cursor;
-mod lexer_min;
 mod position;
 mod token;
 
-pub(crate) use crate::cursor::Cursor;
-pub(crate) use crate::position::*;
-pub(crate) use crate::token::*;
+pub use crate::cursor::Cursor;
+pub use crate::position::*;
+pub use crate::token::*;
 
-/* impl Cursor<'_> {
-    fn first_token(&mut self) -> Token {
-        let first_char = self.first().unwrap();
-        let token_kind = match first_char {
-            'a'..='z' => self.keyword_or_ident(),
-            'A'..='Z' => self.keyword_or_ident(),
-        };
-    }
+use crate::token::TokenKind;
+use crate::token::TokenKind::*;
 
-    fn keyword_or_ident(&mut self) -> Token {
-        self.eat_while(is_ascii_letter);
-        let str = self.slice()
-
-        Token::new()
-    }
-
-    fn is_keyword(str: &str) -> bool {
-
-    }
-
-} */
-
-/* impl<'a> Cursor<'a> {
-    fn slice(&mut self) -> &'a str {
-
-    }
-} */
-
-/* #[inline]
-fn is_ascii_letter(c: char) -> bool {
-    ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
+pub struct Lexer<'a> {
+    cursor: Cursor<'a>,
 }
 
-fn first(input: &str) -> Token {
-    Cursor::new(input).first_token()
-} */
+impl<'a> Lexer<'a> {
+    pub fn new(input: &'a str) -> Self {
+        let cursor = Cursor::new(input);
+        Lexer { cursor }
+    }
+}
+
+impl<'a> Lexer<'a> {
+    pub fn next_token(&mut self) -> Token {
+        let first_char = self.cursor.next_char();
+        let start = self.cursor.pos.clone();
+
+        let kind = match first_char {
+            'c' => Const,
+            'a'..='z' => Ident,
+            _ => Unknown,
+        };
+
+        let end = self.cursor.pos.clone();
+
+        Token { kind, start, end }
+    }
+}
 
 #[cfg(test)]
 mod tests {
 
-    use super::TokenKind::*;
     use super::*;
 
-    /* #[test]
+    #[test]
     fn first_goalpost() {
-        let input = "const val = true; if (val) { alert(val); }";
-
-        assert_eq!(first(input), Token { kind: If, len: 2 });
-    } */
+        let mut lexer = Lexer::new("const val = true;");
+        assert_eq!(
+            lexer.next_token(),
+            Token {
+                kind: Const,
+                start: Position { line: 1, col: 1 },
+                end: Position { line: 1, col: 6 }
+            }
+        );
+        assert_eq!(
+            lexer.next_token(),
+            Token {
+                kind: Ident,
+                start: Position { line: 1, col: 8 },
+                end: Position { line: 1, col: 11 }
+            }
+        );
+    }
 }
