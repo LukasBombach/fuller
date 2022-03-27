@@ -6,6 +6,5 @@ members = [
   "crates/lexer_n",
   "crates/lexer_par",
   "crates/match_keyword",
-  "crates/match_keyword_derive",
   "crates/parser",
 ]

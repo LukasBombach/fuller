@@ -32,7 +32,6 @@ name = "lexer_n"
 version = "0.1.0"
 dependencies = [
  "match_keyword",
- "match_keyword_derive",
 ]
 
 [[package]]
@@ -41,10 +40,6 @@ version = "0.1.0"
 
 [[package]]
 name = "match_keyword"
-version = "0.1.0"
-
-[[package]]
-name = "match_keyword_derive"
 version = "0.1.0"
 dependencies = [
  "quote",

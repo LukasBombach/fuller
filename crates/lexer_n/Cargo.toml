@@ -7,4 +7,3 @@ edition = "2021"
 
 [dependencies]
 match_keyword = { path = "../match_keyword" }
-match_keyword_derive = { path = "../match_keyword_derive" }
