@@ -1,14 +1,18 @@
-#[macro_export]
+pub trait MatchKeyword {
+    fn match_keyword();
+}
+
+/* #[macro_export]
 macro_rules! match_keyword {
     ($a:block) => {
         $a
     };
-}
+} */
 
 #[cfg(test)]
 mod tests {
 
-    use super::*;
+    /*  use super::*;
 
     #[test]
     fn it_works() {
@@ -25,5 +29,5 @@ mod tests {
         };
 
         assert_eq!(result, Keyword::Const);
-    }
+    } */
 }

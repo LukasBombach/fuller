@@ -28,12 +28,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "lexer_n"
+version = "0.1.0"
+dependencies = [
+ "match_keyword",
+ "match_keyword_derive",
+]
+
+[[package]]
 name = "lexer_par"
 version = "0.1.0"
 
 [[package]]
 name = "match_keyword"
 version = "0.1.0"
+
+[[package]]
+name = "match_keyword_derive"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "once_cell"
@@ -46,6 +62,35 @@ name = "parser"
 version = "0.1.0"
 dependencies = [
  "lexer",
+]
+
+[[package]]
+name = "proc-macro2"
+version = "1.0.36"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7342d5883fbccae1cc37a2353b09c87c9b0f3afd73f5fb9bba687a1f733b029"
+dependencies = [
+ "unicode-xid",
+]
+
+[[package]]
+name = "quote"
+version = "1.0.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "632d02bff7f874a36f33ea8bb416cd484b90cc66c1194b1a1110d067a7013f58"
+dependencies = [
+ "proc-macro2",
+]
+
+[[package]]
+name = "syn"
+version = "1.0.89"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea297be220d52398dcc07ce15a209fce436d361735ac1db700cab3b6cdfb9f54"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-xid",
 ]
 
 [[package]]
