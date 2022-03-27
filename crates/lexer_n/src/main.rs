@@ -1,9 +1,13 @@
-use match_keyword::MatchKeyword;
-use match_keyword_derive::MatchKeyword;
+use match_keyword_derive::match_keyword;
 
-#[derive(MatchKeyword)]
-struct Keywords;
+match_keyword!();
 
 fn main() {
-    Keywords::match_keyword();
+    let input = "const";
+    match_keyword!(SELECT * FROM posts WHERE id=1);
+    /* (input, {
+        "const" => Const,
+        "let" => Let,
+        "var" => Var,
+    }); */
 }
