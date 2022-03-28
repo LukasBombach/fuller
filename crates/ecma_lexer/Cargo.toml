@@ -1,5 +1,5 @@
 [package]
-name = "lexer_par"
+name = "ecma_lexer"
 version = "0.1.0"
 edition = "2021"
 

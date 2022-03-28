@@ -2,9 +2,5 @@
 resolver = "2"
 
 members = [
-  "crates/lexer",
-  "crates/lexer_n",
-  "crates/lexer_par",
-  "crates/match_keyword",
-  "crates/parser",
+  "crates/ecma_lexer",
 ]
