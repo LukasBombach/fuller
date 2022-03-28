@@ -3,4 +3,5 @@ resolver = "2"
 
 members = [
   "crates/ecma_lexer",
+  "crates/match_keyword",
 ]

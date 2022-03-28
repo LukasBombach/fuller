@@ -1,9 +1,13 @@
 [package]
-name = "ecma_lexer"
+name = "match_keyword"
 version = "0.1.0"
 edition = "2021"
+
+[lib]
+proc-macro = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-match_keyword = { path = "../match_keyword" }
+quote = "1.0.17"
+syn = "1.0.89"
