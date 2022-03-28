@@ -1,3 +1,4 @@
+use std::str::Chars;
 use TokenKind::*;
 
 #[derive(Debug)]
@@ -8,28 +9,41 @@ enum TokenKind {
     UNEXPECTED,
 }
 
+pub struct Cursor<'a> {
+    chars: Chars<'a>,
+}
+
+impl<'a> Cursor<'a> {
+    pub fn new(input: &'a str) -> Cursor<'a> {
+        Cursor {
+          chars: input.chars(),
+        }
+    }
+
+    pub fn next(&mut self) -> char {
+        self.chars.next().unwrap_or_default()
+    }
+}
 
 fn main() {
     let input = "const conrad";
     let mut tokens =  Vec::new();
-    let mut chars = input.chars();
+    let mut cursor = Cursor::new(input);
 
     loop {
-        match chars.next().unwrap_or_default() {
-            'c' => {
-                match chars.next().unwrap_or_default() {
-                    'o' => match chars.next().unwrap_or_default() {
-                        'n' => match chars.next().unwrap_or_default() {
-                            's' => match chars.next().unwrap_or_default() {
-                                't' => tokens.push(CONST),
-                                _ => tokens.push(IDENT),
-                            },
+        match cursor.next() {
+            'c' => match cursor.next() {
+                'o' => match cursor.next() {
+                    'n' => match cursor.next() {
+                        's' => match cursor.next() {
+                            't' => tokens.push(CONST),
                             _ => tokens.push(IDENT),
                         },
                         _ => tokens.push(IDENT),
                     },
                     _ => tokens.push(IDENT),
-                }
+                },
+                _ => tokens.push(IDENT),
             }
             '\x00' => {
                 tokens.push(EOF);
