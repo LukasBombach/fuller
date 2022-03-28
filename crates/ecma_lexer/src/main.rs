@@ -3,56 +3,60 @@ use TokenKind::*;
 
 #[derive(Debug)]
 enum TokenKind {
-    CONST,
-    IDENT,
-    EOF,
-    UNEXPECTED,
+    Const,
+    Ident,
+    Eof,
+    Unexpected,
 }
 
-pub struct Cursor<'a> {
+/* enum Mode {
+    Program,
+    KeywordOrIdent,
+    Ident,
+    Whitespace,
+} */
+
+pub trait Mode {
+    fn test(c: &char) -> ();
+}
+
+pub struct Program;
+impl Mode for Program {
+    fn test(c: &char) -> () {}
+}
+
+pub struct Lexer<'a, M>
+where
+    M: Mode,
+{
     chars: Chars<'a>,
+    tokens: Vec<TokenKind>,
+    mode: M,
 }
 
-impl<'a> Cursor<'a> {
-    pub fn new(input: &'a str) -> Cursor<'a> {
-        Cursor {
-          chars: input.chars(),
+impl<'a> Lexer<'a, Program> {
+    pub fn new(input: &'a str) -> Lexer<'a, Program> {
+        Lexer {
+            chars: input.chars(),
+            tokens: Vec::new(),
+            mode: Program {},
         }
     }
 
-    pub fn next(&mut self) -> char {
-        self.chars.next().unwrap_or_default()
+    pub fn lex(&mut self) -> () {
+        loop {
+            let c = self.chars.next().unwrap_or_default();
+            self.mode
+        }
+    }
+
+    fn keyword_or_ident(&mut self) -> () {}
+
+    fn token(&mut self, token_kind: TokenKind) -> () {
+        self.tokens.push(token_kind);
     }
 }
 
 fn main() {
     let input = "const conrad";
-    let mut tokens =  Vec::new();
-    let mut cursor = Cursor::new(input);
-
-    loop {
-        match cursor.next() {
-            'c' => match cursor.next() {
-                'o' => match cursor.next() {
-                    'n' => match cursor.next() {
-                        's' => match cursor.next() {
-                            't' => tokens.push(CONST),
-                            _ => tokens.push(IDENT),
-                        },
-                        _ => tokens.push(IDENT),
-                    },
-                    _ => tokens.push(IDENT),
-                },
-                _ => tokens.push(IDENT),
-            }
-            '\x00' => {
-                tokens.push(EOF);
-                break;
-            }
-            _ => tokens.push(UNEXPECTED)
-        }
-
-    }
-
-    println!("{:#?}", tokens);
 }
